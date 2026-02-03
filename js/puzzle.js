@@ -43,8 +43,8 @@ class PuzzleGame {
     getImagePath(name) {
         const images = {
             'book': 'https://avatars.mds.yandex.net/get-altay/7730813/2a0000018d07d925674ddbd849313b6cbc73/L_height',
-            'library': 'https://images.unsplash.com/photo-1507842217343-583bb7270b5b?w=800',
-            'nature': 'https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=800'
+            'library': 'https://avatars.mds.yandex.net/get-altay/16444693/2a00000199a4c698176bd6295674938bb59d/orig',
+            'nature': 'https://mkkld.ru/wp-content/uploads/2021/11/thumb_l_26418.jpeg'
         };
         return images[name] || images['book'];
     }
