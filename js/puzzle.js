@@ -42,7 +42,7 @@ class PuzzleGame {
     // Получаем путь к изображению
     getImagePath(name) {
         const images = {
-            'book': 'https://images.unsplash.com/photo-1544942590-74c2ad183b5f?w=800',
+            'book': 'https://avatars.mds.yandex.net/get-altay/7730813/2a0000018d07d925674ddbd849313b6cbc73/L_height',
             'library': 'https://images.unsplash.com/photo-1507842217343-583bb7270b5b?w=800',
             'nature': 'https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=800'
         };
