@@ -50,48 +50,54 @@ class PuzzleGame {
     }
 
     // Создаем пазл
-    createPuzzle() {
-        this.container.innerHTML = '';
-        this.pieces = [];
-        this.emptySlot = this.size * this.size - 1;
+createPuzzle() {
+    this.container.innerHTML = '';
+    this.pieces = [];
+    this.emptySlot = this.size * this.size - 1;
 
-        const imageUrl = this.getImagePath(this.imageName);
-        const pieceSize = 400 / this.size;
+    const imageUrl = this.getImagePath(this.imageName);
+    const pieceSize = 400 / this.size;
+    const totalSize = 400; // Общий размер пазла
 
-        // Устанавливаем размеры контейнера
-        this.container.style.gridTemplateColumns = `repeat(${this.size}, ${pieceSize}px)`;
-        this.container.style.gridTemplateRows = `repeat(${this.size}, ${pieceSize}px)`;
+    // Устанавливаем размеры контейнера
+    this.container.style.gridTemplateColumns = `repeat(${this.size}, ${pieceSize}px)`;
+    this.container.style.gridTemplateRows = `repeat(${this.size}, ${pieceSize}px)`;
 
-        // Создаем все кусочки
-        for (let i = 0; i < this.size * this.size; i++) {
-            if (i === this.emptySlot) continue;
+    // Создаем все кусочки
+    for (let i = 0; i < this.size * this.size; i++) {
+        if (i === this.emptySlot) continue;
 
-            const piece = document.createElement('div');
-            piece.className = 'puzzle-piece';
-            piece.dataset.index = i;
-            piece.dataset.correctIndex = i;
+        const piece = document.createElement('div');
+        piece.className = 'puzzle-piece';
+        piece.dataset.index = i;
+        piece.dataset.correctIndex = i;
 
-            // Вычисляем позицию фона
-            const row = Math.floor(i / this.size);
-            const col = i % this.size;
-            const bgX = -col * pieceSize;
-            const bgY = -row * pieceSize;
+        // Вычисляем позицию фона для КОРРЕКТНОЙ позиции
+        const correctRow = Math.floor(i / this.size);
+        const correctCol = i % this.size;
+        
+        // background-size должен быть размером ВСЕГО пазла
+        piece.style.backgroundImage = `url(${imageUrl})`;
+        piece.style.backgroundSize = `${totalSize}px ${totalSize}px`;
+        
+        // Позиционируем фон: сдвигаем влево и вверх
+        const bgX = -correctCol * pieceSize;
+        const bgY = -correctRow * pieceSize;
+        piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
+        
+        piece.style.width = `${pieceSize}px`;
+        piece.style.height = `${pieceSize}px`;
 
-            piece.style.backgroundImage = `url(${imageUrl})`;
-            piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
-            piece.style.width = `${pieceSize}px`;
-            piece.style.height = `${pieceSize}px`;
+        // События перетаскивания
+        piece.addEventListener('mousedown', (e) => this.startDrag(e, piece));
+        piece.addEventListener('touchstart', (e) => this.startDrag(e, piece), { passive: false });
 
-            // События перетаскивания
-            piece.addEventListener('mousedown', (e) => this.startDrag(e, piece));
-            piece.addEventListener('touchstart', (e) => this.startDrag(e, piece), { passive: false });
-
-            this.container.appendChild(piece);
-            this.pieces.push(piece);
-        }
-
-        this.shufflePuzzle();
+        this.container.appendChild(piece);
+        this.pieces.push(piece);
     }
+
+    this.shufflePuzzle();
+}
 
     // Начало перетаскивания
     startDrag(e, piece) {
@@ -173,44 +179,45 @@ class PuzzleGame {
     }
 
     // Перемешать пазл
-    shufflePuzzle() {
-        // Простой алгоритм перемешивания
-        for (let i = 0; i < 100; i++) {
-            const emptyRow = Math.floor(this.emptySlot / this.size);
-            const emptyCol = this.emptySlot % this.size;
+shufflePuzzle() {
+    // Простой алгоритм перемешивания
+    for (let i = 0; i < 100; i++) {
+        const emptyRow = Math.floor(this.emptySlot / this.size);
+        const emptyCol = this.emptySlot % this.size;
 
-            const directions = [];
-            if (emptyRow > 0) directions.push(-this.size); // вверх
-            if (emptyRow < this.size - 1) directions.push(this.size); // вниз
-            if (emptyCol > 0) directions.push(-1); // влево
-            if (emptyCol < this.size - 1) directions.push(1); // вправо
+        const directions = [];
+        if (emptyRow > 0) directions.push(-this.size); // вверх
+        if (emptyRow < this.size - 1) directions.push(this.size); // вниз
+        if (emptyCol > 0) directions.push(-1); // влево
+        if (emptyCol < this.size - 1) directions.push(1); // вправо
 
-            if (directions.length > 0) {
-                const randomDir = directions[Math.floor(Math.random() * directions.length)];
-                const targetIndex = this.emptySlot + randomDir;
+        if (directions.length > 0) {
+            const randomDir = directions[Math.floor(Math.random() * directions.length)];
+            const targetIndex = this.emptySlot + randomDir;
 
-                // Находим кусочек на целевой позиции
-                const targetPiece = this.pieces.find(p => p.dataset.index == targetIndex);
-                if (targetPiece) {
-                    targetPiece.dataset.index = this.emptySlot;
-                    this.emptySlot = targetIndex;
-                }
+            // Находим кусочек на целевой позиции
+            const targetPiece = this.pieces.find(p => p.dataset.index == targetIndex);
+            if (targetPiece) {
+                targetPiece.dataset.index = this.emptySlot;
+                this.emptySlot = targetIndex;
             }
         }
-
-        // Обновляем отображение
-        this.pieces.forEach(piece => {
-            piece.classList.remove('correct');
-            const index = parseInt(piece.dataset.index);
-            const row = Math.floor(index / this.size);
-            const col = index % this.size;
-            const pieceSize = 400 / this.size;
-            const bgX = -col * pieceSize;
-            const bgY = -row * pieceSize;
-            piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
-        });
     }
 
+    // Обновляем отображение - ПЕРЕПОЗИЦИОНИРУЕМ фон
+    const pieceSize = 400 / this.size;
+    this.pieces.forEach(piece => {
+        piece.classList.remove('correct');
+        const currentIndex = parseInt(piece.dataset.index);
+        const currentRow = Math.floor(currentIndex / this.size);
+        const currentCol = currentIndex % this.size;
+        
+        // Сдвигаем фон в зависимости от ТЕКУЩЕЙ позиции кусочка
+        const bgX = -currentCol * pieceSize;
+        const bgY = -currentRow * pieceSize;
+        piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
+    });
+}
     // Сброс пазла
     resetPuzzle() {
         this.emptySlot = this.size * this.size - 1;
