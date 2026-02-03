@@ -8,12 +8,11 @@ class PuzzleGame {
         this.completedMessage = document.getElementById('completed-message');
         this.playAgainBtn = document.getElementById('play-again-btn');
 
-        this.size = parseInt(this.difficultySelect.value);
-        this.imageName = this.imageSelect.value;
-        this.pieceSize = 400 / this.size;
+        this.size = 4; // 4x4 по умолчанию
+        this.pieceSize = 100; // 400px / 4
         this.totalSize = 400;
         this.imageUrl = '';
-        this.positions = []; // Массив текущих позиций кусочков
+        this.order = []; // Порядок кусочков: [0, 1, 2, ..., null] где null = пустое место
 
         this.init();
     }
@@ -27,7 +26,7 @@ class PuzzleGame {
         // События выбора
         this.difficultySelect.addEventListener('change', (e) => {
             this.size = parseInt(e.target.value);
-            this.pieceSize = 400 / this.size;
+            this.pieceSize = this.totalSize / this.size;
             this.createPuzzle();
         });
 
@@ -36,237 +35,166 @@ class PuzzleGame {
             this.createPuzzle();
         });
 
-        // Создаем пазл
+        // Создаём пазл
         this.createPuzzle();
     }
 
-    // Получаем путь к изображению
     getImagePath(name) {
         const images = {
-            'book': 'https://mstrok.ru/sites/default/files/news-images/ms-172420-1.jpg',
-            'library': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMoYiOhjh4_b_G6uwhPNaPfTDHDh0fHwzugw&s',
-            'nature': 'https://mstrok.ru/sites/default/files/news-images/ms-158405-13.jpg'
+            'book': 'https://avatars.mds.yandex.net/get-altay/7730813/2a0000018d07d925674ddbd849313b6cbc73/L_height',
+            'library': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3pAgdoOYh2PMymsRpgsVehTRvM0421wmKQA&s',
+            'nature': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwMhbnmcLjT4u1zRwLglPs1-eW66KxKw0Tww&s'
         };
         return images[name] || images['book'];
     }
 
-    // Создаем пазл
     createPuzzle() {
         this.container.innerHTML = '';
-        this.imageUrl = this.getImagePath(this.imageName);
-
-        // Устанавливаем размеры контейнера
         this.container.style.gridTemplateColumns = `repeat(${this.size}, ${this.pieceSize}px)`;
         this.container.style.gridTemplateRows = `repeat(${this.size}, ${this.pieceSize}px)`;
-
-        // Инициализируем позиции: [0, 1, 2, ..., пусто]
-        this.positions = [];
+        
+        this.imageUrl = this.getImagePath(this.imageSelect.value);
+        
+        // Создаём правильный порядок: [0, 1, 2, ..., пусто]
+        this.order = [];
         for (let i = 0; i < this.size * this.size; i++) {
-            this.positions.push(i);
+            this.order.push(i);
         }
+        this.order[this.size * this.size - 1] = null; // Последняя ячейка - пустая
 
-        // Создаем все кусочки
-        for (let i = 0; i < this.size * this.size - 1; i++) {
-            this.createPiece(i);
-        }
-
+        this.renderPuzzle();
         this.shufflePuzzle();
     }
 
-    // Создаем один кусочек
-    createPiece(index) {
-        const piece = document.createElement('div');
-        piece.className = 'puzzle-piece';
-        piece.dataset.index = index; // Правильная позиция
+    renderPuzzle() {
+        this.container.innerHTML = '';
 
-        // Вычисляем позицию фона для правильной позиции
-        const row = Math.floor(index / this.size);
-        const col = index % this.size;
-        
-        piece.style.backgroundImage = `url(${this.imageUrl})`;
-        piece.style.backgroundSize = `${this.totalSize}px ${this.totalSize}px`;
-        
-        const bgX = -col * this.pieceSize;
-        const bgY = -row * this.pieceSize;
-        piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
-        
-        piece.style.width = `${this.pieceSize}px`;
-        piece.style.height = `${this.pieceSize}px`;
-
-        // Событие клика
-        piece.addEventListener('click', () => this.handleClick(piece));
-
-        this.container.appendChild(piece);
-    }
-
-    // Обработка клика по кусочку
-    handleClick(piece) {
-        const correctIndex = parseInt(piece.dataset.index);
-        
-        // Находим текущую позицию этого кусочка
-        const currentPosition = this.positions.indexOf(correctIndex);
-        if (currentPosition === -1) return;
-
-        // Находим позицию пустого места
-        const emptyPosition = this.positions.indexOf(this.size * this.size - 1);
-
-        // Проверяем, соседствуют ли они
-        if (this.areAdjacent(currentPosition, emptyPosition)) {
-            // Меняем местами
-            this.positions[currentPosition] = this.size * this.size - 1;
-            this.positions[emptyPosition] = correctIndex;
-
-            // Анимация клика
-            piece.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                piece.style.transform = 'scale(1)';
-                // Обновляем все позиции
-                this.updateAllPieces();
-                // Проверяем победу
-                this.checkWin();
-            }, 100);
+        for (let pos = 0; pos < this.size * this.size; pos++) {
+            const pieceNum = this.order[pos];
+            
+            if (pieceNum !== null) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.dataset.piece = pieceNum; // Номер кусочка (его правильная позиция)
+                piece.dataset.position = pos;   // Текущая позиция в сетке
+                
+                // Вычисляем background-position по ПРАВИЛЬНОМУ номеру кусочка
+                const row = Math.floor(pieceNum / this.size);
+                const col = pieceNum % this.size;
+                const bgX = -col * this.pieceSize;
+                const bgY = -row * this.pieceSize;
+                
+                piece.style.backgroundImage = `url(${this.imageUrl})`;
+                piece.style.backgroundSize = `${this.totalSize}px ${this.totalSize}px`;
+                piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
+                piece.style.width = `${this.pieceSize}px`;
+                piece.style.height = `${this.pieceSize}px`;
+                
+                // Клик по кусочку
+                piece.addEventListener('click', () => this.movePiece(pos));
+                
+                this.container.appendChild(piece);
+            }
         }
     }
 
-    // Проверяем, соседствуют ли две позиции
-    areAdjacent(pos1, pos2) {
+    movePiece(clickedPos) {
+        // Находим позицию пустого места
+        const emptyPos = this.order.indexOf(null);
+        
+        // Проверяем, соседние ли позиции
+        if (this.isAdjacent(clickedPos, emptyPos)) {
+            // Меняем местами кусочек и пустое место
+            this.order[emptyPos] = this.order[clickedPos];
+            this.order[clickedPos] = null;
+            
+            // Перерисовываем
+            this.renderPuzzle();
+            
+            // Проверяем победу
+            this.checkWin();
+        }
+    }
+
+    isAdjacent(pos1, pos2) {
         const row1 = Math.floor(pos1 / this.size);
         const col1 = pos1 % this.size;
         const row2 = Math.floor(pos2 / this.size);
         const col2 = pos2 % this.size;
-
+        
+        // Соседние по горизонтали или вертикали
         return (
             (Math.abs(row1 - row2) === 1 && col1 === col2) ||
             (Math.abs(col1 - col2) === 1 && row1 === row2)
         );
     }
 
-    // Обновляем позиции всех кусочков
-    updateAllPieces() {
-        const pieces = this.container.querySelectorAll('.puzzle-piece');
-        
-        pieces.forEach(piece => {
-            const correctIndex = parseInt(piece.dataset.index);
-            const currentPosition = this.positions.indexOf(correctIndex);
-            
-            if (currentPosition !== -1) {
-                const row = Math.floor(currentPosition / this.size);
-                const col = currentPosition % this.size;
-                
-                const bgX = -col * this.pieceSize;
-                const bgY = -row * this.pieceSize;
-                piece.style.backgroundPosition = `${bgX}px ${bgY}px`;
-            }
-        });
-    }
-
-    // Проверка победы
-    checkWin() {
-        let win = true;
-        const pieces = this.container.querySelectorAll('.puzzle-piece');
-
-        pieces.forEach(piece => {
-            const correctIndex = parseInt(piece.dataset.index);
-            const currentPosition = this.positions.indexOf(correctIndex);
-            
-            if (currentPosition !== correctIndex) {
-                win = false;
-                piece.classList.remove('correct');
-            } else {
-                piece.classList.add('correct');
-            }
-        });
-
-        if (win) {
-            this.showCompletionMessage();
-        }
-    }
-
-    // Перемешать пазл
     shufflePuzzle() {
-        // Перемешиваем массив позиций
-        for (let i = this.positions.length - 1; i > 0; i--) {
-            const emptyPos = this.positions.indexOf(this.size * this.size - 1);
-            
-            // Находим соседние клетки с пустым местом
-            const neighbors = this.getNeighbors(emptyPos);
-            
-            if (neighbors.length > 0) {
-                // Случайный сосед
-                const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-                
-                // Меняем местами с пустым местом
-                const temp = this.positions[emptyPos];
-                this.positions[emptyPos] = this.positions[randomNeighbor];
-                this.positions[randomNeighbor] = temp;
-            }
-        }
-
-        // Делаем дополнительные случайные ходы для лучшего перемешивания
-        for (let i = 0; i < 50; i++) {
-            const emptyPos = this.positions.indexOf(this.size * this.size - 1);
-            const neighbors = this.getNeighbors(emptyPos);
+        // Делаем 100 случайных допустимых ходов
+        for (let i = 0; i < 100; i++) {
+            const emptyPos = this.order.indexOf(null);
+            const neighbors = this.getValidMoves(emptyPos);
             
             if (neighbors.length > 0) {
                 const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-                
-                const temp = this.positions[emptyPos];
-                this.positions[emptyPos] = this.positions[randomNeighbor];
-                this.positions[randomNeighbor] = temp;
+                // Меняем пустое место с соседним кусочком
+                this.order[emptyPos] = this.order[randomNeighbor];
+                this.order[randomNeighbor] = null;
             }
         }
+        this.renderPuzzle();
+    }
 
-        // Обновляем отображение
-        this.updateAllPieces();
+    getValidMoves(emptyPos) {
+        const moves = [];
+        const row = Math.floor(emptyPos / this.size);
+        const col = emptyPos % this.size;
         
-        // Убираем подсветку правильных позиций
-        const pieces = this.container.querySelectorAll('.puzzle-piece');
-        pieces.forEach(piece => piece.classList.remove('correct'));
-    }
-
-    // Получаем соседние клетки
-    getNeighbors(position) {
-        const neighbors = [];
-        const row = Math.floor(position / this.size);
-        const col = position % this.size;
-
         // Вверх
-        if (row > 0) neighbors.push(position - this.size);
+        if (row > 0) moves.push(emptyPos - this.size);
         // Вниз
-        if (row < this.size - 1) neighbors.push(position + this.size);
+        if (row < this.size - 1) moves.push(emptyPos + this.size);
         // Влево
-        if (col > 0) neighbors.push(position - 1);
+        if (col > 0) moves.push(emptyPos - 1);
         // Вправо
-        if (col < this.size - 1) neighbors.push(position + 1);
-
-        return neighbors;
+        if (col < this.size - 1) moves.push(emptyPos + 1);
+        
+        return moves;
     }
 
-    // Сброс пазла
+    checkWin() {
+        // Проверяем, что все кусочки на своих местах
+        for (let i = 0; i < this.size * this.size - 1; i++) {
+            if (this.order[i] !== i) {
+                return false;
+            }
+        }
+        
+        // Победа!
+        this.showCompletionMessage();
+        return true;
+    }
+
     resetPuzzle() {
         // Восстанавливаем правильный порядок
-        for (let i = 0; i < this.size * this.size; i++) {
-            this.positions[i] = i;
+        for (let i = 0; i < this.size * this.size - 1; i++) {
+            this.order[i] = i;
         }
-        this.updateAllPieces();
-        
-        const pieces = this.container.querySelectorAll('.puzzle-piece');
-        pieces.forEach(piece => piece.classList.remove('correct'));
+        this.order[this.size * this.size - 1] = null;
+        this.renderPuzzle();
     }
 
-    // Показать сообщение о победе
     showCompletionMessage() {
         this.completedMessage.style.display = 'flex';
     }
 
-    // Скрыть сообщение
     hideCompletionMessage() {
         this.completedMessage.style.display = 'none';
         this.shufflePuzzle();
     }
 }
 
-// Инициализация игры при загрузке
+// Запуск игры
 document.addEventListener('DOMContentLoaded', () => {
-    new PuzzleGame();
+    window.game = new PuzzleGame();
 });
