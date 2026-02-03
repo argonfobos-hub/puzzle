@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧩 Онлайн Пазлы | Библиотечная Игра</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 Онлайн Пазлы</h1>
+            <p class="subtitle">Собери картинку из частей!</p>
+        </header>
+
+        <div class="game-controls">
+            <div class="difficulty-selector">
+                <label for="difficulty">Сложность:</label>
+                <select id="difficulty">
+                    <option value="3">Легко (3×3)</option>
+                    <option value="4" selected>Средне (4×4)</option>
+                    <option value="5">Сложно (5×5)</option>
+                </select>
+            </div>
+
+            <div class="image-selector">
+                <label for="image-select">Выбери картинку:</label>
+                <select id="image-select">
+                    <option value="book">Книги</option>
+                    <option value="library">Библиотека</option>
+                    <option value="nature">Природа</option>
+                </select>
+            </div>
+
+            <button id="shuffle-btn" class="btn btn-primary">🔀 Перемешать</button>
+            <button id="reset-btn" class="btn btn-secondary">🔄 Начать заново</button>
+        </div>
+
+        <div class="game-area">
+            <div id="puzzle-container" class="puzzle-container"></div>
+            <div id="completed-message" class="completed-message">
+                <h2>🎉 Поздравляем!</h2>
+                <p>Вы собрали пазл!</p>
+                <button id="play-again-btn" class="btn btn-success">Играть ещё</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>🎮 Библиотечная игра-пазл | Создано с ❤️</p>
+        </footer>
+    </div>
+
+    <script src="js/puzzle.js"></script>
+</body>
+</html>
