@@ -43,9 +43,9 @@ class PuzzleGame {
     // Получаем путь к изображению
     getImagePath(name) {
         const images = {
-            'book': 'https://images.unsplash.com/photo-1544942590-74c2ad183b5f?w=800',
-            'library': 'https://images.unsplash.com/photo-1507842217343-583bb7270b5b?w=800',
-            'nature': 'https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=800'
+            'book': 'https://mstrok.ru/sites/default/files/news-images/ms-172420-1.jpg',
+            'library': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMoYiOhjh4_b_G6uwhPNaPfTDHDh0fHwzugw&s',
+            'nature': 'https://mstrok.ru/sites/default/files/news-images/ms-158405-13.jpg'
         };
         return images[name] || images['book'];
     }
