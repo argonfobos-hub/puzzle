@@ -208,11 +208,27 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             margin-bottom: 20px;
             border: 5px solid #ffd700;
+            object-fit: cover;
+        }
+        
+        #next-btn {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            color: #333;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        #next-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
         }
         
         #play-again-btn {
-            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
-            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 15px 40px;
             font-size: 1.2rem;
             border-radius: 12px;
@@ -221,7 +237,7 @@
         
         #play-again-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
         }
         
         .instructions {
@@ -303,7 +319,8 @@
         <p>Вы собрали космический пазл!</p>
         <div class="subtitle" style="color: #ffd700; font-size: 1.3rem; margin-bottom: 10px;">Собранная картинка:</div>
         <img id="completed-image" class="completed-image" src="" alt="Собранная картинка">
-        <button id="play-again-btn">Играть ещё</button>
+        <button id="next-btn">➡️ Следующий пазл</button>
+        <button id="play-again-btn">🔄 Играть ещё раз</button>
     </div>
 
     <script>
@@ -333,6 +350,7 @@
                 this.resetBtn = document.getElementById('reset-btn');
                 this.winScreen = document.getElementById('win-screen');
                 this.completedImage = document.getElementById('completed-image');
+                this.nextBtn = document.getElementById('next-btn');
                 this.playAgainBtn = document.getElementById('play-again-btn');
                 
                 this.init();
@@ -350,6 +368,7 @@
                 
                 this.shuffleBtn.addEventListener('click', () => this.shufflePieces());
                 this.resetBtn.addEventListener('click', () => this.resetPuzzle());
+                this.nextBtn.addEventListener('click', () => this.nextPuzzle());
                 this.playAgainBtn.addEventListener('click', () => this.playAgain());
             }
             
@@ -422,6 +441,7 @@
             
             handleDragStart(e, pieceId) {
                 e.dataTransfer.setData('pieceId', pieceId);
+                e.dataTransfer.setData('source', 'piece');
             }
             
             handleDragOver(e) {
@@ -433,13 +453,25 @@
                 e.preventDefault();
                 e.stopPropagation();
                 
+                const source = e.dataTransfer.getData('source');
+                const pieceId = e.dataTransfer.getData('pieceId');
+                
+                if (source === 'piece') {
+                    // Перетаскиваем с контейнера на доску
+                    this.dropFromContainer(pieceId, targetIndex);
+                } else if (source === 'board') {
+                    // Перетаскиваем с доски на доску или обратно в контейнер
+                    this.dropFromBoard(pieceId, targetIndex);
+                }
+            }
+            
+            dropFromContainer(pieceId, targetIndex) {
                 // Проверяем, пуста ли ячейка
                 if (this.board[targetIndex] !== null) {
                     return; // Ячейка уже занята
                 }
                 
                 // Получаем данные о перетаскиваемом кусочке
-                const pieceId = e.dataTransfer.getData('pieceId');
                 const pieceData = this.pieces.find(p => p.id === parseInt(pieceId));
                 
                 if (!pieceData || pieceData.placed) {
@@ -449,6 +481,9 @@
                 // Создаём новый элемент кусочка для доски
                 const pieceEl = document.createElement('div');
                 pieceEl.className = 'puzzle-piece';
+                pieceEl.draggable = true;
+                pieceEl.dataset.pieceId = pieceId;
+                pieceEl.dataset.source = 'board';
                 
                 const pieceSize = 130;
                 const bgX = -pieceData.col * pieceSize;
@@ -457,6 +492,12 @@
                 pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
                 pieceEl.style.backgroundSize = `390px 390px`;
                 pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
+                
+                // События перетаскивания с доски
+                pieceEl.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('pieceId', pieceId);
+                    e.dataTransfer.setData('source', 'board');
+                });
                 
                 // Добавляем в ячейку доски
                 const targetCell = e.target.closest('.board-cell');
@@ -472,6 +513,57 @@
                 const originalPiece = this.piecesContainer.querySelector(`[data-piece-id="${pieceId}"]`);
                 if (originalPiece) {
                     originalPiece.remove();
+                }
+                
+                // Проверяем победу
+                this.checkWin();
+            }
+            
+            dropFromBoard(pieceId, targetIndex) {
+                const pieceData = this.pieces.find(p => p.id === parseInt(pieceId));
+                
+                if (!pieceData) return;
+                
+                // Находим текущую позицию кусочка на доске
+                const currentBoardIndex = this.board.indexOf(parseInt(pieceId));
+                
+                if (currentBoardIndex === -1) return;
+                
+                const targetCell = document.querySelector(`.board-cell[data-index="${targetIndex}"]`);
+                
+                if (targetCell && this.board[targetIndex] === null) {
+                    // Перемещаем на другую ячейку доски
+                    const pieceEl = targetCell.querySelector('.puzzle-piece');
+                    if (pieceEl) {
+                        pieceEl.remove();
+                    }
+                    
+                    const currentCell = document.querySelector(`.board-cell[data-index="${currentBoardIndex}"]`);
+                    const pieceElToMove = currentCell.querySelector('.puzzle-piece');
+                    
+                    if (pieceElToMove) {
+                        targetCell.innerHTML = '';
+                        targetCell.appendChild(pieceElToMove);
+                        targetCell.classList.add('occupied');
+                        currentCell.innerHTML = '';
+                        currentCell.classList.remove('occupied');
+                        
+                        this.board[targetIndex] = pieceData.id;
+                        this.board[currentBoardIndex] = null;
+                    }
+                } else {
+                    // Возвращаем в контейнер
+                    const currentCell = document.querySelector(`.board-cell[data-index="${currentBoardIndex}"]`);
+                    const pieceEl = currentCell.querySelector('.puzzle-piece');
+                    
+                    if (pieceEl) {
+                        this.piecesContainer.appendChild(pieceEl);
+                        currentCell.innerHTML = '';
+                        currentCell.classList.remove('occupied');
+                        
+                        this.board[currentBoardIndex] = null;
+                        pieceData.placed = false;
+                    }
                 }
                 
                 // Проверяем победу
@@ -501,6 +593,14 @@
                     this.completedImage.src = this.images[this.currentImage];
                     this.winScreen.style.display = 'flex';
                 }
+            }
+            
+            nextPuzzle() {
+                this.winScreen.style.display = 'none';
+                // Переходим к следующему пазлу
+                this.currentImage = this.currentImage < 8 ? this.currentImage + 1 : 1;
+                this.imageSelect.value = this.currentImage;
+                this.resetPuzzle();
             }
             
             resetPuzzle() {
