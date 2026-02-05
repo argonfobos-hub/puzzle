@@ -121,11 +121,24 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            transition: all 0.3s ease;
         }
         
         .board-cell.occupied {
             border: 3px solid #667eea;
             background-color: rgba(102, 126, 234, 0.1);
+        }
+        
+        .board-cell.correct {
+            border: 4px solid #28a745;
+            background-color: rgba(40, 167, 69, 0.3);
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(40, 167, 69, 0.8); }
         }
         
         .pieces-container {
@@ -310,7 +323,7 @@
         </div>
         
         <div class="instructions">
-            💡 <strong>Как играть:</strong> Перетащи каждый кусочек на правильное место на игровом поле!
+            💡 <strong>Как играть:</strong> Перетащи каждый кусочек на правильное место на игровом поле! Правильно поставленные кусочки подсвечиваются зелёным ✅
         </div>
     </div>
     
@@ -465,6 +478,14 @@
                 const originalPiece = this.piecesContainer.querySelector(`[data-piece-id="${pieceId}"]`);
                 if (originalPiece) originalPiece.remove();
                 
+                // Проверяем, правильная ли это позиция
+                const targetRow = Math.floor(targetIndex / 3);
+                const targetCol = targetIndex % 3;
+                
+                if (targetRow === pieceData.row && targetCol === pieceData.col) {
+                    targetCell.classList.add('correct');
+                }
+                
                 this.checkWin();
             }
             
@@ -505,7 +526,7 @@
                 for (let i = 0; i < 9; i++) {
                     const cell = this.boardElement.children[i];
                     cell.innerHTML = '';
-                    cell.classList.remove('occupied');
+                    cell.classList.remove('occupied', 'correct');
                 }
                 
                 this.shufflePieces();
