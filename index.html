@@ -128,11 +128,6 @@
             background-color: rgba(102, 126, 234, 0.1);
         }
         
-        .board-cell.correct {
-            border: 3px solid #28a745;
-            background-color: rgba(40, 167, 69, 0.2);
-        }
-        
         .pieces-container {
             display: flex;
             flex-wrap: wrap;
@@ -165,11 +160,6 @@
         
         .puzzle-piece:active {
             cursor: grabbing;
-        }
-        
-        .drag-over {
-            background-color: rgba(102, 126, 234, 0.3);
-            border: 3px solid #667eea;
         }
         
         .win-screen {
@@ -208,6 +198,16 @@
         .win-screen p {
             font-size: 1.5rem;
             color: white;
+            margin-bottom: 20px;
+        }
+        
+        .completed-image {
+            width: 400px;
+            height: 400px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            border: 5px solid #ffd700;
         }
         
         #play-again-btn {
@@ -248,6 +248,11 @@
             .puzzle-piece {
                 width: 80px;
                 height: 80px;
+            }
+            
+            .completed-image {
+                width: 300px;
+                height: 300px;
             }
             
             .controls {
@@ -296,6 +301,8 @@
     <div id="win-screen" class="win-screen">
         <h2>🎉 ПОБЕДА!</h2>
         <p>Вы собрали космический пазл!</p>
+        <div class="subtitle" style="color: #ffd700; font-size: 1.3rem; margin-bottom: 10px;">Собранная картинка:</div>
+        <img id="completed-image" class="completed-image" src="" alt="Собранная картинка">
         <button id="play-again-btn">Играть ещё</button>
     </div>
 
@@ -325,6 +332,7 @@
                 this.shuffleBtn = document.getElementById('shuffle-btn');
                 this.resetBtn = document.getElementById('reset-btn');
                 this.winScreen = document.getElementById('win-screen');
+                this.completedImage = document.getElementById('completed-image');
                 this.playAgainBtn = document.getElementById('play-again-btn');
                 
                 this.init();
@@ -371,7 +379,6 @@
                     
                     // События для ячеек доски
                     cell.addEventListener('dragover', (e) => this.handleDragOver(e));
-                    cell.addEventListener('dragleave', (e) => this.handleDragLeave(e));
                     cell.addEventListener('drop', (e) => this.handleDrop(e, i));
                     
                     this.boardElement.appendChild(cell);
@@ -407,7 +414,6 @@
                         
                         // События перетаскивания
                         pieceEl.addEventListener('dragstart', (e) => this.handleDragStart(e, piece.id));
-                        pieceEl.addEventListener('dragend', () => this.handleDragEnd(e));
                         
                         this.piecesContainer.appendChild(pieceEl);
                     }
@@ -416,31 +422,16 @@
             
             handleDragStart(e, pieceId) {
                 e.dataTransfer.setData('pieceId', pieceId);
-                setTimeout(() => {
-                    e.target.classList.add('dragging');
-                }, 0);
-            }
-            
-            handleDragEnd(e) {
-                e.target.classList.remove('dragging');
             }
             
             handleDragOver(e) {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                e.target.classList.add('drag-over');
-            }
-            
-            handleDragLeave(e) {
-                e.target.classList.remove('drag-over');
             }
             
             handleDrop(e, targetIndex) {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                // Убираем подсветку
-                e.target.classList.remove('drag-over');
                 
                 // Проверяем, пуста ли ячейка
                 if (this.board[targetIndex] !== null) {
@@ -458,7 +449,6 @@
                 // Создаём новый элемент кусочка для доски
                 const pieceEl = document.createElement('div');
                 pieceEl.className = 'puzzle-piece';
-                pieceEl.draggable = true;
                 
                 const pieceSize = 130;
                 const bgX = -pieceData.col * pieceSize;
@@ -469,7 +459,7 @@
                 pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
                 
                 // Добавляем в ячейку доски
-                const targetCell = e.target;
+                const targetCell = e.target.closest('.board-cell');
                 targetCell.innerHTML = '';
                 targetCell.appendChild(pieceEl);
                 targetCell.classList.add('occupied');
@@ -477,14 +467,6 @@
                 // Обновляем данные
                 this.board[targetIndex] = pieceData.id;
                 pieceData.placed = true;
-                
-                // Проверяем, правильная ли позиция
-                const targetRow = Math.floor(targetIndex / 3);
-                const targetCol = targetIndex % 3;
-                
-                if (targetRow === pieceData.row && targetCol === pieceData.col) {
-                    targetCell.classList.add('correct');
-                }
                 
                 // Удаляем кусочек из контейнера
                 const originalPiece = this.piecesContainer.querySelector(`[data-piece-id="${pieceId}"]`);
@@ -515,6 +497,8 @@
                 }
                 
                 if (win) {
+                    // Показываем собранную картинку
+                    this.completedImage.src = this.images[this.currentImage];
                     this.winScreen.style.display = 'flex';
                 }
             }
@@ -528,7 +512,7 @@
                 this.board = Array(9).fill(null);
                 document.querySelectorAll('.board-cell').forEach(cell => {
                     cell.innerHTML = '';
-                    cell.classList.remove('occupied', 'correct');
+                    cell.classList.remove('occupied');
                 });
                 
                 this.shufflePieces();
