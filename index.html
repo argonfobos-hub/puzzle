@@ -324,14 +324,13 @@
     </div>
 
     <script>
-        class TruePuzzle {
+        class SimplePuzzle {
             constructor() {
-                this.size = 3; // 3×3
+                this.size = 3;
                 this.currentImage = 8;
-                this.pieces = []; // Массив кусочков: { id, row, col, placed: false }
-                this.board = Array(9).fill(null); // Позиции на доске
+                this.pieces = [];
+                this.board = Array(9).fill(null);
                 
-                // Ваши космические изображения
                 this.images = {
                     1: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqobR7jl-41JqpFx7zXAgEuAestadkYtUjNQ&s',
                     2: 'https://icdn.lenta.ru/images/2021/04/09/19/20210409191206205/square_1280_a61933cce3cf86a318a64d0110307fcd.jpg',
@@ -360,7 +359,6 @@
                 this.currentImage = parseInt(this.imageSelect.value);
                 this.createPuzzle();
                 
-                // События
                 this.imageSelect.addEventListener('change', (e) => {
                     this.currentImage = parseInt(e.target.value);
                     this.createPuzzle();
@@ -373,7 +371,6 @@
             }
             
             createPuzzle() {
-                // Создаём кусочки (все 9)
                 this.pieces = [];
                 for (let i = 0; i < 9; i++) {
                     const row = Math.floor(i / 3);
@@ -386,35 +383,34 @@
                     });
                 }
                 
-                // Очищаем доску
                 this.boardElement.innerHTML = '';
                 this.board = Array(9).fill(null);
                 
-                // Создаём ячейки доски
                 for (let i = 0; i < 9; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'board-cell';
                     cell.dataset.index = i;
                     
-                    // События для ячеек доски
-                    cell.addEventListener('dragover', (e) => this.handleDragOver(e));
-                    cell.addEventListener('drop', (e) => this.handleDrop(e, i));
+                    cell.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                    });
+                    
+                    cell.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        this.handleDrop(e, i);
+                    });
                     
                     this.boardElement.appendChild(cell);
                 }
                 
-                // Перемешиваем и отображаем кусочки
                 this.shufflePieces();
             }
             
             shufflePieces() {
-                // Перемешиваем кусочки в контейнере
                 this.piecesContainer.innerHTML = '';
-                
-                // Перемешиваем массив кусочков
                 const shuffled = [...this.pieces].sort(() => Math.random() - 0.5);
                 
-                // Размещаем кусочки в контейнере
                 shuffled.forEach((piece) => {
                     if (!piece.placed) {
                         const pieceEl = document.createElement('div');
@@ -422,8 +418,7 @@
                         pieceEl.draggable = true;
                         pieceEl.dataset.pieceId = piece.id;
                         
-                        // Устанавливаем фон для кусочка
-                        const pieceSize = 130; // размер кусочка на доске
+                        const pieceSize = 130;
                         const bgX = -piece.col * pieceSize;
                         const bgY = -piece.row * pieceSize;
                         
@@ -431,59 +426,25 @@
                         pieceEl.style.backgroundSize = `390px 390px`;
                         pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
                         
-                        // События перетаскивания
-                        pieceEl.addEventListener('dragstart', (e) => this.handleDragStart(e, piece.id));
+                        pieceEl.addEventListener('dragstart', (e) => {
+                            e.dataTransfer.setData('pieceId', piece.id);
+                        });
                         
                         this.piecesContainer.appendChild(pieceEl);
                     }
                 });
             }
             
-            handleDragStart(e, pieceId) {
-                e.dataTransfer.setData('pieceId', pieceId);
-                e.dataTransfer.setData('source', 'piece');
-            }
-            
-            handleDragOver(e) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-            }
-            
             handleDrop(e, targetIndex) {
-                e.preventDefault();
-                e.stopPropagation();
+                if (this.board[targetIndex] !== null) return;
                 
-                const source = e.dataTransfer.getData('source');
                 const pieceId = e.dataTransfer.getData('pieceId');
-                
-                if (source === 'piece') {
-                    // Перетаскиваем с контейнера на доску
-                    this.dropFromContainer(pieceId, targetIndex);
-                } else if (source === 'board') {
-                    // Перетаскиваем с доски на доску или обратно в контейнер
-                    this.dropFromBoard(pieceId, targetIndex);
-                }
-            }
-            
-            dropFromContainer(pieceId, targetIndex) {
-                // Проверяем, пуста ли ячейка
-                if (this.board[targetIndex] !== null) {
-                    return; // Ячейка уже занята
-                }
-                
-                // Получаем данные о перетаскиваемом кусочке
                 const pieceData = this.pieces.find(p => p.id === parseInt(pieceId));
                 
-                if (!pieceData || pieceData.placed) {
-                    return;
-                }
+                if (!pieceData || pieceData.placed) return;
                 
-                // Создаём новый элемент кусочка для доски
                 const pieceEl = document.createElement('div');
                 pieceEl.className = 'puzzle-piece';
-                pieceEl.draggable = true;
-                pieceEl.dataset.pieceId = pieceId;
-                pieceEl.dataset.source = 'board';
                 
                 const pieceSize = 130;
                 const bgX = -pieceData.col * pieceSize;
@@ -493,85 +454,21 @@
                 pieceEl.style.backgroundSize = `390px 390px`;
                 pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
                 
-                // События перетаскивания с доски
-                pieceEl.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('pieceId', pieceId);
-                    e.dataTransfer.setData('source', 'board');
-                });
-                
-                // Добавляем в ячейку доски
-                const targetCell = e.target.closest('.board-cell');
+                const targetCell = this.boardElement.children[targetIndex];
                 targetCell.innerHTML = '';
                 targetCell.appendChild(pieceEl);
                 targetCell.classList.add('occupied');
                 
-                // Обновляем данные
                 this.board[targetIndex] = pieceData.id;
                 pieceData.placed = true;
                 
-                // Удаляем кусочек из контейнера
                 const originalPiece = this.piecesContainer.querySelector(`[data-piece-id="${pieceId}"]`);
-                if (originalPiece) {
-                    originalPiece.remove();
-                }
+                if (originalPiece) originalPiece.remove();
                 
-                // Проверяем победу
-                this.checkWin();
-            }
-            
-            dropFromBoard(pieceId, targetIndex) {
-                const pieceData = this.pieces.find(p => p.id === parseInt(pieceId));
-                
-                if (!pieceData) return;
-                
-                // Находим текущую позицию кусочка на доске
-                const currentBoardIndex = this.board.indexOf(parseInt(pieceId));
-                
-                if (currentBoardIndex === -1) return;
-                
-                const targetCell = document.querySelector(`.board-cell[data-index="${targetIndex}"]`);
-                
-                if (targetCell && this.board[targetIndex] === null) {
-                    // Перемещаем на другую ячейку доски
-                    const pieceEl = targetCell.querySelector('.puzzle-piece');
-                    if (pieceEl) {
-                        pieceEl.remove();
-                    }
-                    
-                    const currentCell = document.querySelector(`.board-cell[data-index="${currentBoardIndex}"]`);
-                    const pieceElToMove = currentCell.querySelector('.puzzle-piece');
-                    
-                    if (pieceElToMove) {
-                        targetCell.innerHTML = '';
-                        targetCell.appendChild(pieceElToMove);
-                        targetCell.classList.add('occupied');
-                        currentCell.innerHTML = '';
-                        currentCell.classList.remove('occupied');
-                        
-                        this.board[targetIndex] = pieceData.id;
-                        this.board[currentBoardIndex] = null;
-                    }
-                } else {
-                    // Возвращаем в контейнер
-                    const currentCell = document.querySelector(`.board-cell[data-index="${currentBoardIndex}"]`);
-                    const pieceEl = currentCell.querySelector('.puzzle-piece');
-                    
-                    if (pieceEl) {
-                        this.piecesContainer.appendChild(pieceEl);
-                        currentCell.innerHTML = '';
-                        currentCell.classList.remove('occupied');
-                        
-                        this.board[currentBoardIndex] = null;
-                        pieceData.placed = false;
-                    }
-                }
-                
-                // Проверяем победу
                 this.checkWin();
             }
             
             checkWin() {
-                // Проверяем, все ли кусочки на правильных местах
                 let win = true;
                 for (let i = 0; i < 9; i++) {
                     const pieceId = this.board[i];
@@ -589,7 +486,6 @@
                 }
                 
                 if (win) {
-                    // Показываем собранную картинку
                     this.completedImage.src = this.images[this.currentImage];
                     this.winScreen.style.display = 'flex';
                 }
@@ -597,23 +493,20 @@
             
             nextPuzzle() {
                 this.winScreen.style.display = 'none';
-                // Переходим к следующему пазлу
                 this.currentImage = this.currentImage < 8 ? this.currentImage + 1 : 1;
                 this.imageSelect.value = this.currentImage;
                 this.resetPuzzle();
             }
             
             resetPuzzle() {
-                // Сбрасываем всё
-                this.pieces.forEach(p => {
-                    p.placed = false;
-                });
-                
+                this.pieces.forEach(p => p.placed = false);
                 this.board = Array(9).fill(null);
-                document.querySelectorAll('.board-cell').forEach(cell => {
+                
+                for (let i = 0; i < 9; i++) {
+                    const cell = this.boardElement.children[i];
                     cell.innerHTML = '';
                     cell.classList.remove('occupied');
-                });
+                }
                 
                 this.shufflePieces();
             }
@@ -624,9 +517,8 @@
             }
         }
         
-        // Запуск игры при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
-            window.puzzle = new TruePuzzle();
+            new SimplePuzzle();
         });
     </script>
 </body>
