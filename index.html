@@ -28,7 +28,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             padding: 30px;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
             text-align: center;
         }
@@ -102,20 +102,20 @@
         
         .puzzle-board {
             display: grid;
-            grid-template-columns: repeat(3, 120px);
-            grid-template-rows: repeat(3, 120px);
-            gap: 4px;
-            background: rgba(200, 200, 200, 0.3);
+            grid-template-columns: repeat(3, 130px);
+            grid-template-rows: repeat(3, 130px);
+            gap: 5px;
+            background: rgba(200, 200, 200, 0.2);
             border-radius: 10px;
             padding: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         
         .board-cell {
-            width: 120px;
-            height: 120px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border: 2px dashed #aaa;
+            width: 130px;
+            height: 130px;
+            background-color: rgba(240, 240, 240, 0.7);
+            border: 3px dashed #aaa;
             border-radius: 8px;
             display: flex;
             justify-content: center;
@@ -123,63 +123,53 @@
             position: relative;
         }
         
+        .board-cell.occupied {
+            border: 3px solid #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+        
         .board-cell.correct {
-            background-color: rgba(40, 167, 69, 0.15);
-            border: 2px solid #28a745;
+            border: 3px solid #28a745;
+            background-color: rgba(40, 167, 69, 0.2);
         }
         
         .pieces-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
-            min-height: 140px;
+            gap: 15px;
+            min-height: 100px;
             width: 100%;
-            background: rgba(240, 240, 240, 0.7);
+            background: rgba(245, 245, 245, 0.8);
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px;
             margin-top: 10px;
         }
         
         .puzzle-piece {
-            width: 80px;
-            height: 80px;
-            background-size: 360px 360px;
+            width: 100px;
+            height: 100px;
+            background-size: 390px 390px;
             border-radius: 8px;
             cursor: grab;
             user-select: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
-            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.7);
         }
         
         .puzzle-piece:hover {
-            transform: scale(1.1);
-            z-index: 100;
+            transform: scale(1.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
         
         .puzzle-piece:active {
             cursor: grabbing;
-            transform: scale(1.05);
         }
         
-        .piece-slot {
-            width: 80px;
-            height: 80px;
-            background-color: rgba(200, 200, 200, 0.3);
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .dragging {
-            position: fixed !important;
-            z-index: 1000;
-            opacity: 0.9;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        .drag-over {
+            background-color: rgba(102, 126, 234, 0.3);
+            border: 3px solid #667eea;
         }
         
         .win-screen {
@@ -246,23 +236,18 @@
         
         @media (max-width: 480px) {
             .puzzle-board {
-                grid-template-columns: repeat(3, 100px);
-                grid-template-rows: repeat(3, 100px);
+                grid-template-columns: repeat(3, 110px);
+                grid-template-rows: repeat(3, 110px);
             }
             
             .board-cell {
-                width: 100px;
-                height: 100px;
+                width: 110px;
+                height: 110px;
             }
             
             .puzzle-piece {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .piece-slot {
-                width: 70px;
-                height: 70px;
+                width: 80px;
+                height: 80px;
             }
             
             .controls {
@@ -319,7 +304,7 @@
             constructor() {
                 this.size = 3; // 3×3
                 this.currentImage = 8;
-                this.pieces = []; // Массив кусочков: { id, row, col, placed: false, element: null }
+                this.pieces = []; // Массив кусочков: { id, row, col, placed: false }
                 this.board = Array(9).fill(null); // Позиции на доске
                 
                 // Ваши космические изображения
@@ -342,10 +327,6 @@
                 this.winScreen = document.getElementById('win-screen');
                 this.playAgainBtn = document.getElementById('play-again-btn');
                 
-                this.draggedPiece = null;
-                this.dragOffsetX = 0;
-                this.dragOffsetY = 0;
-                
                 this.init();
             }
             
@@ -362,10 +343,6 @@
                 this.shuffleBtn.addEventListener('click', () => this.shufflePieces());
                 this.resetBtn.addEventListener('click', () => this.resetPuzzle());
                 this.playAgainBtn.addEventListener('click', () => this.playAgain());
-                
-                // События для перетаскивания на документ
-                document.addEventListener('mousemove', (e) => this.handleDragMove(e));
-                document.addEventListener('mouseup', () => this.handleDrop());
             }
             
             createPuzzle() {
@@ -378,8 +355,7 @@
                         id: i,
                         row: row,
                         col: col,
-                        placed: false,
-                        onBoardIndex: null
+                        placed: false
                     });
                 }
                 
@@ -392,6 +368,12 @@
                     const cell = document.createElement('div');
                     cell.className = 'board-cell';
                     cell.dataset.index = i;
+                    
+                    // События для ячеек доски
+                    cell.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    cell.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                    cell.addEventListener('drop', (e) => this.handleDrop(e, i));
+                    
                     this.boardElement.appendChild(cell);
                 }
                 
@@ -407,146 +389,123 @@
                 const shuffled = [...this.pieces].sort(() => Math.random() - 0.5);
                 
                 // Размещаем кусочки в контейнере
-                shuffled.forEach((piece, index) => {
+                shuffled.forEach((piece) => {
                     if (!piece.placed) {
-                        const slot = document.createElement('div');
-                        slot.className = 'piece-slot';
-                        slot.dataset.pieceId = piece.id;
-                        slot.style.position = 'relative';
-                        
-                        // Создаём кусочек внутри слота
                         const pieceEl = document.createElement('div');
                         pieceEl.className = 'puzzle-piece';
+                        pieceEl.draggable = true;
                         pieceEl.dataset.pieceId = piece.id;
                         
                         // Устанавливаем фон для кусочка
-                        const pieceSize = 120; // размер кусочка на доске
+                        const pieceSize = 130; // размер кусочка на доске
                         const bgX = -piece.col * pieceSize;
                         const bgY = -piece.row * pieceSize;
                         
                         pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
-                        pieceEl.style.backgroundSize = `360px 360px`;
+                        pieceEl.style.backgroundSize = `390px 390px`;
                         pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
                         
                         // События перетаскивания
-                        pieceEl.addEventListener('mousedown', (e) => this.handleDragStart(e, pieceEl, piece.id));
+                        pieceEl.addEventListener('dragstart', (e) => this.handleDragStart(e, piece.id));
+                        pieceEl.addEventListener('dragend', () => this.handleDragEnd(e));
                         
-                        slot.appendChild(pieceEl);
-                        this.piecesContainer.appendChild(slot);
+                        this.piecesContainer.appendChild(pieceEl);
                     }
                 });
             }
             
-            handleDragStart(e, element, pieceId) {
+            handleDragStart(e, pieceId) {
+                e.dataTransfer.setData('pieceId', pieceId);
+                setTimeout(() => {
+                    e.target.classList.add('dragging');
+                }, 0);
+            }
+            
+            handleDragEnd(e) {
+                e.target.classList.remove('dragging');
+            }
+            
+            handleDragOver(e) {
                 e.preventDefault();
-                this.draggedPiece = {
-                    element: element,
-                    pieceId: pieceId,
-                    originalParent: element.parentElement
-                };
-                
-                // Позиция курсора относительно кусочка
-                const rect = element.getBoundingClientRect();
-                this.dragOffsetX = e.clientX - rect.left;
-                this.dragOffsetY = e.clientY - rect.top;
-                
-                // Делаем кусочек абсолютным и переносим в body для свободного перемещения
-                element.classList.add('dragging');
-                element.style.width = '80px';
-                element.style.height = '80px';
-                document.body.appendChild(element);
-                
-                // Устанавливаем начальную позицию
-                this.updateDragPosition(e.clientX, e.clientY);
+                e.dataTransfer.dropEffect = 'move';
+                e.target.classList.add('drag-over');
             }
             
-            handleDragMove(e) {
-                if (!this.draggedPiece) return;
-                this.updateDragPosition(e.clientX, e.clientY);
+            handleDragLeave(e) {
+                e.target.classList.remove('drag-over');
             }
             
-            updateDragPosition(x, y) {
-                if (!this.draggedPiece) return;
-                this.draggedPiece.element.style.left = `${x - this.dragOffsetX}px`;
-                this.draggedPiece.element.style.top = `${y - this.dragOffsetY}px`;
-            }
-            
-            handleDrop() {
-                if (!this.draggedPiece) return;
+            handleDrop(e, targetIndex) {
+                e.preventDefault();
+                e.stopPropagation();
                 
-                const pieceId = this.draggedPiece.pieceId;
-                const pieceEl = this.draggedPiece.element;
-                const pieceData = this.pieces.find(p => p.id === pieceId);
+                // Убираем подсветку
+                e.target.classList.remove('drag-over');
                 
-                // Находим, над какой ячейкой доски отпустили кусочек
-                const boardCells = document.querySelectorAll('.board-cell');
-                let targetCell = null;
-                let targetIndex = -1;
-                
-                for (let i = 0; i < boardCells.length; i++) {
-                    const cell = boardCells[i];
-                    const rect = cell.getBoundingClientRect();
-                    
-                    const mouseX = parseInt(pieceEl.style.left) + this.dragOffsetX;
-                    const mouseY = parseInt(pieceEl.style.top) + this.dragOffsetY;
-                    
-                    if (
-                        mouseX > rect.left && 
-                        mouseX < rect.right && 
-                        mouseY > rect.top && 
-                        mouseY < rect.bottom
-                    ) {
-                        targetCell = cell;
-                        targetIndex = i;
-                        break;
-                    }
+                // Проверяем, пуста ли ячейка
+                if (this.board[targetIndex] !== null) {
+                    return; // Ячейка уже занята
                 }
                 
-                if (targetCell && targetIndex !== -1 && this.board[targetIndex] === null) {
-                    // Размещаем кусочек на доске
-                    targetCell.innerHTML = '';
-                    pieceEl.classList.remove('dragging');
-                    pieceEl.style.position = 'absolute';
-                    pieceEl.style.width = '120px';
-                    pieceEl.style.height = '120px';
-                    targetCell.appendChild(pieceEl);
-                    
-                    // Обновляем данные
-                    this.board[targetIndex] = pieceId;
-                    pieceData.placed = true;
-                    pieceData.onBoardIndex = targetIndex;
-                    
-                    // Проверяем, правильная ли позиция
-                    const targetRow = Math.floor(targetIndex / 3);
-                    const targetCol = targetIndex % 3;
-                    
-                    if (targetRow === pieceData.row && targetCol === pieceData.col) {
-                        targetCell.classList.add('correct');
-                    }
-                    
-                    // Проверяем победу
-                    this.checkWin();
-                } else {
-                    // Возвращаем кусочек обратно в слот
-                    pieceEl.classList.remove('dragging');
-                    pieceEl.style.position = 'static';
-                    pieceEl.style.left = '';
-                    pieceEl.style.top = '';
-                    this.draggedPiece.originalParent.appendChild(pieceEl);
+                // Получаем данные о перетаскиваемом кусочке
+                const pieceId = e.dataTransfer.getData('pieceId');
+                const pieceData = this.pieces.find(p => p.id === parseInt(pieceId));
+                
+                if (!pieceData || pieceData.placed) {
+                    return;
                 }
                 
-                this.draggedPiece = null;
+                // Создаём новый элемент кусочка для доски
+                const pieceEl = document.createElement('div');
+                pieceEl.className = 'puzzle-piece';
+                pieceEl.draggable = true;
+                
+                const pieceSize = 130;
+                const bgX = -pieceData.col * pieceSize;
+                const bgY = -pieceData.row * pieceSize;
+                
+                pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
+                pieceEl.style.backgroundSize = `390px 390px`;
+                pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
+                
+                // Добавляем в ячейку доски
+                const targetCell = e.target;
+                targetCell.innerHTML = '';
+                targetCell.appendChild(pieceEl);
+                targetCell.classList.add('occupied');
+                
+                // Обновляем данные
+                this.board[targetIndex] = pieceData.id;
+                pieceData.placed = true;
+                
+                // Проверяем, правильная ли позиция
+                const targetRow = Math.floor(targetIndex / 3);
+                const targetCol = targetIndex % 3;
+                
+                if (targetRow === pieceData.row && targetCol === pieceData.col) {
+                    targetCell.classList.add('correct');
+                }
+                
+                // Удаляем кусочек из контейнера
+                const originalPiece = this.piecesContainer.querySelector(`[data-piece-id="${pieceId}"]`);
+                if (originalPiece) {
+                    originalPiece.remove();
+                }
+                
+                // Проверяем победу
+                this.checkWin();
             }
             
             checkWin() {
                 // Проверяем, все ли кусочки на правильных местах
                 let win = true;
                 for (let i = 0; i < 9; i++) {
-                    const piece = this.pieces.find(p => p.id === this.board[i]);
-                    if (!piece) {
+                    const pieceId = this.board[i];
+                    if (pieceId === null) {
                         win = false;
                         break;
                     }
+                    const piece = this.pieces.find(p => p.id === pieceId);
                     const targetRow = Math.floor(i / 3);
                     const targetCol = i % 3;
                     if (piece.row !== targetRow || piece.col !== targetCol) {
@@ -564,13 +523,12 @@
                 // Сбрасываем всё
                 this.pieces.forEach(p => {
                     p.placed = false;
-                    p.onBoardIndex = null;
                 });
                 
                 this.board = Array(9).fill(null);
                 document.querySelectorAll('.board-cell').forEach(cell => {
                     cell.innerHTML = '';
-                    cell.classList.remove('correct');
+                    cell.classList.remove('occupied', 'correct');
                 });
                 
                 this.shufflePieces();
