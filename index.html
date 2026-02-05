@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Космический Пазл</title>
+    <title>🧩 Космический Пазл</title>
     <style>
         * {
             margin: 0;
@@ -93,28 +93,499 @@
             background: #5a6268;
         }
         
-        .puzzle-grid {
+        .puzzle-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .puzzle-board {
             display: grid;
-            grid-template-columns: repeat(3, 130px);
-            grid-template-rows: repeat(3, 130px);
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
             gap: 4px;
-            background: #e9ecef;
+            background: rgba(200, 200, 200, 0.3);
             border-radius: 10px;
             padding: 10px;
-            margin: 0 auto;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 420px;
+        }
+        
+        .board-cell {
+            width: 120px;
+            height: 120px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px dashed #aaa;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
         }
         
+        .board-cell.correct {
+            background-color: rgba(40, 167, 69, 0.15);
+            border: 2px solid #28a745;
+        }
+        
+        .pieces-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 140px;
+            width: 100%;
+            background: rgba(240, 240, 240, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
         .puzzle-piece {
-            width: 130px;
-            height: 130px;
-            background-size: 390px 390px;
-            background-position: center;
+            width: 80px;
+            height: 80px;
+            background-size: 360px 360px;
             border-radius: 8px;
             cursor: grab;
             user-select: none;
-            transition: all 0.2s;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: absolute;
+        }
+        
+        .puzzle-piece:hover {
+            transform: scale(1.1);
+            z-index: 100;
+        }
+        
+        .puzzle-piece:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+        
+        .piece-slot {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(200, 200, 200, 0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .dragging {
+            position: fixed !important;
+            z-index: 1000;
+            opacity: 0.9;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+        
+        .win-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 12, 41, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 1000;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .win-screen h2 {
+            color: #ffd700;
+            font-size: 3.5rem;
+            animation: bounce 1s ease;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .win-screen p {
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        #play-again-btn {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            color: #333;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        
+        #play-again-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            color: #666;
+            text-align: left;
+        }
+        
+        @media (max-width: 480px) {
+            .puzzle-board {
+                grid-template-columns: repeat(3, 100px);
+                grid-template-rows: repeat(3, 100px);
+            }
+            
+            .board-cell {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .puzzle-piece {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .piece-slot {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🧩 Космический Пазл</h1>
+        <p class="subtitle">Собери картинку из кусочков!</p>
+        
+        <div class="controls">
+            <select id="image-select">
+                <option value="1">🌌 Космос 1</option>
+                <option value="2">🪐 Космос 2</option>
+                <option value="3">👨‍🚀 Космос 3</option>
+                <option value="4">🌠 Космос 4</option>
+                <option value="5">🛰️ Космос 5</option>
+                <option value="6">🐕 Космос 6</option>
+                <option value="7">🚀 Космос 7</option>
+                <option value="8" selected>🪐 Космос 8</option>
+            </select>
+            <button id="shuffle-btn">🔀 Перемешать кусочки</button>
+            <button id="reset-btn">🔄 Новая игра</button>
+        </div>
+        
+        <div class="puzzle-area">
+            <div class="subtitle">🎮 Игровое поле</div>
+            <div id="puzzle-board" class="puzzle-board"></div>
+            
+            <div class="subtitle" style="margin-top: 20px;">🧩 Кусочки для сборки</div>
+            <div id="pieces-container" class="pieces-container"></div>
+        </div>
+        
+        <div class="instructions">
+            💡 <strong>Как играть:</strong> Перетащи каждый кусочек на правильное место на игровом поле!
+        </div>
+    </div>
+    
+    <div id="win-screen" class="win-screen">
+        <h2>🎉 ПОБЕДА!</h2>
+        <p>Вы собрали космический пазл!</p>
+        <button id="play-again-btn">Играть ещё</button>
+    </div>
+
+    <script>
+        class TruePuzzle {
+            constructor() {
+                this.size = 3; // 3×3
+                this.currentImage = 8;
+                this.pieces = []; // Массив кусочков: { id, row, col, placed: false, element: null }
+                this.board = Array(9).fill(null); // Позиции на доске
+                
+                // Ваши космические изображения
+                this.images = {
+                    1: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqobR7jl-41JqpFx7zXAgEuAestadkYtUjNQ&s',
+                    2: 'https://icdn.lenta.ru/images/2021/04/09/19/20210409191206205/square_1280_a61933cce3cf86a318a64d0110307fcd.jpg',
+                    3: 'https://ru-sled.ru/wp-content/uploads/2023/03/18-%D0%BC%D0%B0%D1%80%D1%82%D0%B0-1965-%D0%B3%D0%BE%D0%B4%D0%B0-%D0%BA%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82-%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9-%D0%9B%D0%B5%D0%BE%D0%BD%D0%BE%D0%B2-.jpg',
+                    4: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGLVzUMPP8HIcBrNlJ5OspsGFhZUczSM3NWA&s',
+                    5: 'https://aif-s3.aif.ru/images/016/882/bfd2a2f5979a29adfb5415558e34317f.jpg',
+                    6: 'https://okleyka.pro/upload/iblock/1ba/belka-i-strelka-aerografiya-vinilografiya-nakleyki-okleyka-pro-6.jpg',
+                    7: 'https://postmania.ru//files/products/0736-a.800x600.jpg',
+                    8: 'https://this-was.org/wp-content/uploads/2022/07/1-24.jpg'
+                };
+                
+                this.boardElement = document.getElementById('puzzle-board');
+                this.piecesContainer = document.getElementById('pieces-container');
+                this.imageSelect = document.getElementById('image-select');
+                this.shuffleBtn = document.getElementById('shuffle-btn');
+                this.resetBtn = document.getElementById('reset-btn');
+                this.winScreen = document.getElementById('win-screen');
+                this.playAgainBtn = document.getElementById('play-again-btn');
+                
+                this.draggedPiece = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.currentImage = parseInt(this.imageSelect.value);
+                this.createPuzzle();
+                
+                // События
+                this.imageSelect.addEventListener('change', (e) => {
+                    this.currentImage = parseInt(e.target.value);
+                    this.createPuzzle();
+                });
+                
+                this.shuffleBtn.addEventListener('click', () => this.shufflePieces());
+                this.resetBtn.addEventListener('click', () => this.resetPuzzle());
+                this.playAgainBtn.addEventListener('click', () => this.playAgain());
+                
+                // События для перетаскивания на документ
+                document.addEventListener('mousemove', (e) => this.handleDragMove(e));
+                document.addEventListener('mouseup', () => this.handleDrop());
+            }
+            
+            createPuzzle() {
+                // Создаём кусочки (все 9)
+                this.pieces = [];
+                for (let i = 0; i < 9; i++) {
+                    const row = Math.floor(i / 3);
+                    const col = i % 3;
+                    this.pieces.push({
+                        id: i,
+                        row: row,
+                        col: col,
+                        placed: false,
+                        onBoardIndex: null
+                    });
+                }
+                
+                // Очищаем доску
+                this.boardElement.innerHTML = '';
+                this.board = Array(9).fill(null);
+                
+                // Создаём ячейки доски
+                for (let i = 0; i < 9; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'board-cell';
+                    cell.dataset.index = i;
+                    this.boardElement.appendChild(cell);
+                }
+                
+                // Перемешиваем и отображаем кусочки
+                this.shufflePieces();
+            }
+            
+            shufflePieces() {
+                // Перемешиваем кусочки в контейнере
+                this.piecesContainer.innerHTML = '';
+                
+                // Перемешиваем массив кусочков
+                const shuffled = [...this.pieces].sort(() => Math.random() - 0.5);
+                
+                // Размещаем кусочки в контейнере
+                shuffled.forEach((piece, index) => {
+                    if (!piece.placed) {
+                        const slot = document.createElement('div');
+                        slot.className = 'piece-slot';
+                        slot.dataset.pieceId = piece.id;
+                        slot.style.position = 'relative';
+                        
+                        // Создаём кусочек внутри слота
+                        const pieceEl = document.createElement('div');
+                        pieceEl.className = 'puzzle-piece';
+                        pieceEl.dataset.pieceId = piece.id;
+                        
+                        // Устанавливаем фон для кусочка
+                        const pieceSize = 120; // размер кусочка на доске
+                        const bgX = -piece.col * pieceSize;
+                        const bgY = -piece.row * pieceSize;
+                        
+                        pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
+                        pieceEl.style.backgroundSize = `360px 360px`;
+                        pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
+                        
+                        // События перетаскивания
+                        pieceEl.addEventListener('mousedown', (e) => this.handleDragStart(e, pieceEl, piece.id));
+                        
+                        slot.appendChild(pieceEl);
+                        this.piecesContainer.appendChild(slot);
+                    }
+                });
+            }
+            
+            handleDragStart(e, element, pieceId) {
+                e.preventDefault();
+                this.draggedPiece = {
+                    element: element,
+                    pieceId: pieceId,
+                    originalParent: element.parentElement
+                };
+                
+                // Позиция курсора относительно кусочка
+                const rect = element.getBoundingClientRect();
+                this.dragOffsetX = e.clientX - rect.left;
+                this.dragOffsetY = e.clientY - rect.top;
+                
+                // Делаем кусочек абсолютным и переносим в body для свободного перемещения
+                element.classList.add('dragging');
+                element.style.width = '80px';
+                element.style.height = '80px';
+                document.body.appendChild(element);
+                
+                // Устанавливаем начальную позицию
+                this.updateDragPosition(e.clientX, e.clientY);
+            }
+            
+            handleDragMove(e) {
+                if (!this.draggedPiece) return;
+                this.updateDragPosition(e.clientX, e.clientY);
+            }
+            
+            updateDragPosition(x, y) {
+                if (!this.draggedPiece) return;
+                this.draggedPiece.element.style.left = `${x - this.dragOffsetX}px`;
+                this.draggedPiece.element.style.top = `${y - this.dragOffsetY}px`;
+            }
+            
+            handleDrop() {
+                if (!this.draggedPiece) return;
+                
+                const pieceId = this.draggedPiece.pieceId;
+                const pieceEl = this.draggedPiece.element;
+                const pieceData = this.pieces.find(p => p.id === pieceId);
+                
+                // Находим, над какой ячейкой доски отпустили кусочек
+                const boardCells = document.querySelectorAll('.board-cell');
+                let targetCell = null;
+                let targetIndex = -1;
+                
+                for (let i = 0; i < boardCells.length; i++) {
+                    const cell = boardCells[i];
+                    const rect = cell.getBoundingClientRect();
+                    
+                    const mouseX = parseInt(pieceEl.style.left) + this.dragOffsetX;
+                    const mouseY = parseInt(pieceEl.style.top) + this.dragOffsetY;
+                    
+                    if (
+                        mouseX > rect.left && 
+                        mouseX < rect.right && 
+                        mouseY > rect.top && 
+                        mouseY < rect.bottom
+                    ) {
+                        targetCell = cell;
+                        targetIndex = i;
+                        break;
+                    }
+                }
+                
+                if (targetCell && targetIndex !== -1 && this.board[targetIndex] === null) {
+                    // Размещаем кусочек на доске
+                    targetCell.innerHTML = '';
+                    pieceEl.classList.remove('dragging');
+                    pieceEl.style.position = 'absolute';
+                    pieceEl.style.width = '120px';
+                    pieceEl.style.height = '120px';
+                    targetCell.appendChild(pieceEl);
+                    
+                    // Обновляем данные
+                    this.board[targetIndex] = pieceId;
+                    pieceData.placed = true;
+                    pieceData.onBoardIndex = targetIndex;
+                    
+                    // Проверяем, правильная ли позиция
+                    const targetRow = Math.floor(targetIndex / 3);
+                    const targetCol = targetIndex % 3;
+                    
+                    if (targetRow === pieceData.row && targetCol === pieceData.col) {
+                        targetCell.classList.add('correct');
+                    }
+                    
+                    // Проверяем победу
+                    this.checkWin();
+                } else {
+                    // Возвращаем кусочек обратно в слот
+                    pieceEl.classList.remove('dragging');
+                    pieceEl.style.position = 'static';
+                    pieceEl.style.left = '';
+                    pieceEl.style.top = '';
+                    this.draggedPiece.originalParent.appendChild(pieceEl);
+                }
+                
+                this.draggedPiece = null;
+            }
+            
+            checkWin() {
+                // Проверяем, все ли кусочки на правильных местах
+                let win = true;
+                for (let i = 0; i < 9; i++) {
+                    const piece = this.pieces.find(p => p.id === this.board[i]);
+                    if (!piece) {
+                        win = false;
+                        break;
+                    }
+                    const targetRow = Math.floor(i / 3);
+                    const targetCol = i % 3;
+                    if (piece.row !== targetRow || piece.col !== targetCol) {
+                        win = false;
+                        break;
+                    }
+                }
+                
+                if (win) {
+                    this.winScreen.style.display = 'flex';
+                }
+            }
+            
+            resetPuzzle() {
+                // Сбрасываем всё
+                this.pieces.forEach(p => {
+                    p.placed = false;
+                    p.onBoardIndex = null;
+                });
+                
+                this.board = Array(9).fill(null);
+                document.querySelectorAll('.board-cell').forEach(cell => {
+                    cell.innerHTML = '';
+                    cell.classList.remove('correct');
+                });
+                
+                this.shufflePieces();
+            }
+            
+            playAgain() {
+                this.winScreen.style.display = 'none';
+                this.resetPuzzle();
+            }
+        }
+        
+        // Запуск игры при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            window.puzzle = new TruePuzzle();
+        });
+    </script>
+</body>
+</html>
