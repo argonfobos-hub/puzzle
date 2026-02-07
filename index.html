@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Звездные рубежи России</title>
+    <title>🚀 Космический Пазл</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #000 url('image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23000"/><circle cx="20" cy="30" r="1" fill="%23fff" opacity="0.8"/><circle cx="60" cy="20" r="0.8" fill="%23fff" opacity="0.6"/><circle cx="80" cy="70" r="1.2" fill="%23fff" opacity="0.9"/><circle cx="40" cy="80" r="0.9" fill="%23fff" opacity="0.7"/><circle cx="10" cy="60" r="1.1" fill="%23fff" opacity="0.85"/><circle cx="90" cy="40" r="0.7" fill="%23fff" opacity="0.65"/><circle cx="50" cy="50" r="0.6" fill="%23fff" opacity="0.75"/><circle cx="30" cy="10" r="1" fill="%23fff" opacity="0.8"/><circle cx="70" cy="90" r="0.9" fill="%23fff" opacity="0.7"/></svg>');
+            background: #000 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23000"/><circle cx="20" cy="30" r="1" fill="%23fff" opacity="0.8"/><circle cx="60" cy="20" r="0.8" fill="%23fff" opacity="0.6"/><circle cx="80" cy="70" r="1.2" fill="%23fff" opacity="0.9"/><circle cx="40" cy="80" r="0.9" fill="%23fff" opacity="0.7"/><circle cx="10" cy="60" r="1.1" fill="%23fff" opacity="0.85"/><circle cx="90" cy="40" r="0.7" fill="%23fff" opacity="0.65"/><circle cx="50" cy="50" r="0.6" fill="%23fff" opacity="0.75"/><circle cx="30" cy="10" r="1" fill="%23fff" opacity="0.8"/><circle cx="70" cy="90" r="0.9" fill="%23fff" opacity="0.7"/></svg>');
             background-size: 50px 50px;
             min-height: 100vh;
             display: flex;
@@ -63,8 +63,8 @@
                 0 0 30px rgba(100, 180, 255, 0.3),
                 0 0 60px rgba(150, 100, 255, 0.2),
                 inset 0 0 20px rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            max-width: 750px;
+            padding: 30px;
+            max-width: 1100px;
             width: 100%;
             text-align: center;
             position: relative;
@@ -95,7 +95,7 @@
         
         .subtitle {
             color: #aaa;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 1.2rem;
             text-shadow: 0 0 10px rgba(170, 170, 170, 0.5);
         }
@@ -104,7 +104,7 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
         }
         
@@ -171,17 +171,36 @@
                 0 0 20px rgba(108, 117, 125, 0.4);
         }
         
+        /* Горизонтальное расположение: СЛЕВА доска, СПРАВА кусочки */
         .puzzle-area {
             display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .board-section {
+            display: flex;
             flex-direction: column;
-            gap: 25px;
             align-items: center;
+            gap: 15px;
+            min-width: 480px;
+        }
+        
+        .pieces-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            min-width: 380px;
         }
         
         .puzzle-board {
             display: grid;
-            grid-template-columns: repeat(3, 130px);
-            grid-template-rows: repeat(3, 130px);
+            grid-template-columns: repeat(3, 150px);
+            grid-template-rows: repeat(3, 150px);
             gap: 6px;
             background: rgba(15, 20, 40, 0.6);
             border: 3px solid rgba(100, 150, 255, 0.3);
@@ -193,8 +212,8 @@
         }
         
         .board-cell {
-            width: 130px;
-            height: 130px;
+            width: 150px;
+            height: 150px;
             background-color: rgba(30, 40, 70, 0.5);
             border: 3px dashed rgba(150, 180, 220, 0.4);
             border-radius: 10px;
@@ -240,26 +259,24 @@
         }
         
         .pieces-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 18px;
-            min-height: 110px;
-            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 110px);
+            gap: 15px;
             background: rgba(25, 35, 60, 0.7);
             border: 2px solid rgba(150, 180, 220, 0.3);
             border-radius: 20px;
-            padding: 25px;
-            margin-top: 15px;
+            padding: 20px;
             box-shadow: 
                 0 5px 20px rgba(0, 0, 0, 0.4),
                 inset 0 0 15px rgba(100, 150, 255, 0.1);
+            min-height: 380px;
+            width: 360px;
         }
         
         .puzzle-piece {
             width: 100px;
             height: 100px;
-            background-size: 390px 390px;
+            background-size: 450px 450px;
             border-radius: 10px;
             cursor: grab;
             user-select: none;
@@ -345,8 +362,8 @@
         }
         
         .completed-image {
-            width: 420px;
-            height: 420px;
+            width: 450px;
+            height: 450px;
             border-radius: 20px;
             box-shadow: 
                 0 15px 50px rgba(0, 0, 0, 0.6),
@@ -408,33 +425,78 @@
             background: rgba(20, 30, 50, 0.7);
             padding: 18px;
             border-radius: 15px;
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 0.98rem;
             color: #ccc;
             text-align: left;
             border: 2px solid rgba(150, 180, 220, 0.3);
             box-shadow: inset 0 0 10px rgba(100, 150, 255, 0.2);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        @media (max-width: 900px) {
+            .puzzle-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .board-section, .pieces-section {
+                min-width: auto;
+            }
+            
+            .puzzle-board {
+                grid-template-columns: repeat(3, 120px);
+                grid-template-rows: repeat(3, 120px);
+            }
+            
+            .board-cell {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .pieces-container {
+                grid-template-columns: repeat(3, 90px);
+                width: 300px;
+            }
+            
+            .puzzle-piece {
+                width: 85px;
+                height: 85px;
+                background-size: 360px 360px;
+            }
+            
+            .completed-image {
+                width: 300px;
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
         
         @media (max-width: 480px) {
             .puzzle-board {
-                grid-template-columns: repeat(3, 105px);
-                grid-template-rows: repeat(3, 105px);
+                grid-template-columns: repeat(3, 100px);
+                grid-template-rows: repeat(3, 100px);
             }
             
             .board-cell {
-                width: 105px;
-                height: 105px;
+                width: 100px;
+                height: 100px;
+            }
+            
+            .pieces-container {
+                grid-template-columns: repeat(3, 75px);
+                width: 250px;
             }
             
             .puzzle-piece {
-                width: 75px;
-                height: 75px;
-            }
-            
-            .completed-image {
-                width: 280px;
-                height: 280px;
+                width: 70px;
+                height: 70px;
+                background-size: 300px 300px;
             }
             
             .controls {
@@ -453,7 +515,7 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🚀 Звездные рубежи России</h1>
+        <h1>🚀 Космический Пазл</h1>
         <p class="subtitle">Собери картинку из кусочков среди звёзд!</p>
         
         <div class="controls">
@@ -471,12 +533,17 @@
             <button id="reset-btn">🔄 Новая игра</button>
         </div>
         
+        <!-- ГОРИЗОНТАЛЬНЫЙ МАКЕТ: СЛЕВА ДОСКА, СПРАВА КУСОЧКИ -->
         <div class="puzzle-area">
-            <div class="subtitle">🎮 Игровое поле</div>
-            <div id="puzzle-board" class="puzzle-board"></div>
+            <div class="board-section">
+                <div class="subtitle">🎮 Игровое поле</div>
+                <div id="puzzle-board" class="puzzle-board"></div>
+            </div>
             
-            <div class="subtitle" style="margin-top: 25px;">🧩 Кусочки для сборки</div>
-            <div id="pieces-container" class="pieces-container"></div>
+            <div class="pieces-section">
+                <div class="subtitle">🧩 Кусочки для сборки</div>
+                <div id="pieces-container" class="pieces-container"></div>
+            </div>
         </div>
         
         <div class="instructions">
@@ -505,15 +572,16 @@
                 this.pieces = [];
                 this.board = Array(9).fill(null);
                 
+                // ВАШИ КАРТИНКИ (без лишних пробелов!)
                 this.images = {
-                    1: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqobR7jl-41JqpFx7zXAgEuAestadkYtUjNQ&s',
-                    2: 'https://icdn.lenta.ru/images/2021/04/09/19/20210409191206205/square_1280_a61933cce3cf86a318a64d0110307fcd.jpg',
-                    3: 'https://ru-sled.ru/wp-content/uploads/2023/03/18-%D0%BC%D0%B0%D1%80%D1%82%D0%B0-1965-%D0%B3%D0%BE%D0%B4%D0%B0-%D0%BA%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82-%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9-%D0%9B%D0%B5%D0%BE%D0%BD%D0%BE%D0%B2-.jpg',
-                    4: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGLVzUMPP8HIcBrNlJ5OspsGFhZUczSM3NWA&s',
-                    5: 'https://aif-s3.aif.ru/images/016/882/bfd2a2f5979a29adfb5415558e34317f.jpg',
-                    6: 'https://okleyka.pro/upload/iblock/1ba/belka-i-strelka-aerografiya-vinilografiya-nakleyki-okleyka-pro-6.jpg',
-                    7: 'https://postmania.ru//files/products/0736-a.800x600.jpg',
-                    8: 'https://this-was.org/wp-content/uploads/2022/07/1-24.jpg'
+                    1: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/1.jpg',
+                    2: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/2.jpg',
+                    3: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/3.jpg',
+                    4: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/4.jpg',
+                    5: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/5.jpg',
+                    6: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/6.jpg',
+                    7: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/7.jpg',
+                    8: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/8.jpg'
                 };
                 
                 this.boardElement = document.getElementById('puzzle-board');
@@ -625,12 +693,12 @@
                         pieceEl.draggable = true;
                         pieceEl.dataset.pieceId = piece.id;
                         
-                        const pieceSize = 130;
+                        const pieceSize = 150;
                         const bgX = -piece.col * pieceSize;
                         const bgY = -piece.row * pieceSize;
                         
                         pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
-                        pieceEl.style.backgroundSize = `390px 390px`;
+                        pieceEl.style.backgroundSize = `450px 450px`;
                         pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
                         
                         pieceEl.addEventListener('dragstart', (e) => {
@@ -665,12 +733,12 @@
                 pieceEl.draggable = true;
                 pieceEl.dataset.pieceId = pieceId;
                 
-                const pieceSize = 130;
+                const pieceSize = 150;
                 const bgX = -pieceData.col * pieceSize;
                 const bgY = -pieceData.row * pieceSize;
                 
                 pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
-                pieceEl.style.backgroundSize = `390px 390px`;
+                pieceEl.style.backgroundSize = `450px 450px`;
                 pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
                 
                 pieceEl.addEventListener('dragstart', (e) => {
