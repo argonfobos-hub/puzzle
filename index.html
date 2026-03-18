@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Звездные рубежи России</title>
+    <title>🚀 Звездные рубежи</title>
     <style>
         * {
             margin: 0;
@@ -198,7 +198,7 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            width: max-content;
+            min-width: 380px;
         }
         
         .puzzle-board {
@@ -213,7 +213,7 @@
             box-shadow: 
                 0 10px 30px rgba(0, 0, 0, 0.5),
                 inset 0 0 20px rgba(100, 150, 255, 0.2);
-            overflow: hidden; /* ← Защита от вылезания */
+            overflow: hidden;
             position: relative;
         }
         
@@ -264,21 +264,17 @@
             50% { box-shadow: 0 0 30px rgba(220, 53, 69, 0.8), inset 0 0 15px rgba(220, 53, 69, 0.4); }
         }
         
+        /* === КОНТЕЙНЕР ДЛЯ КУСОЧКОВ БЕЗ ПОДЛОЖКИ === */
         .pieces-container {
-            display: grid;
-            grid-template-columns: repeat(3, 110px);
-            gap: 15px;
-            background: rgba(25, 35, 60, 0.7);
-            border: 2px solid rgba(150, 180, 220, 0.3);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 
-                0 5px 20px rgba(0, 0, 0, 0.4),
-                inset 0 0 15px rgba(100, 150, 255, 0.1);
-            min-height: 380px;
-            width: 360px;
-            overflow: hidden; /* ← Защита от вылезания */
             position: relative;
+            width: 500px;
+            height: 400px;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            margin: 0 auto;
+            overflow: visible;
         }
         
         .puzzle-piece {
@@ -295,8 +291,14 @@
             border: 2px solid rgba(255, 255, 255, 0.8);
             position: relative;
             overflow: hidden;
-            flex-shrink: 0; /* ← Защита от сжатия */
+            flex-shrink: 0;
             box-sizing: border-box;
+        }
+        
+        /* Хаотичные кусочки */
+        .puzzle-piece.loose {
+            position: absolute;
+            margin: 0;
         }
         
         .puzzle-piece::before {
@@ -311,8 +313,7 @@
         }
         
         .puzzle-piece:hover {
-            /* ← Уменьшенный масштаб для аккуратности */
-            transform: scale(1.05) rotate(1deg);
+            transform: scale(1.1) rotate(0deg) !important;
             box-shadow: 
                 0 8px 25px rgba(0, 0, 0, 0.5),
                 0 0 20px rgba(100, 150, 255, 0.6);
@@ -321,7 +322,7 @@
         
         .puzzle-piece:active {
             cursor: grabbing;
-            transform: scale(1.02);
+            transform: scale(1.05) !important;
         }
         
         .win-screen {
@@ -480,8 +481,8 @@
             }
             
             .pieces-container {
-                grid-template-columns: repeat(3, 90px);
-                width: 300px;
+                width: 400px;
+                height: 350px;
             }
             
             .puzzle-piece {
@@ -512,8 +513,8 @@
             }
             
             .pieces-container {
-                grid-template-columns: repeat(3, 75px);
-                width: 250px;
+                width: 300px;
+                height: 300px;
             }
             
             .puzzle-piece {
@@ -574,7 +575,7 @@
             • Перетащи кусочек на игровое поле 🖱️<br>
             • 🟢 Зелёная подсветка = правильно!<br>
             • 🔴 Красная подсветка = неверно, перемести!<br>
-            • Можно перетаскивать кусочки обратно в контейнер или на другое место!
+            • Кусочки разбросаны хаотично — найди свои места!
         </div>
     </div>
     
@@ -703,24 +704,34 @@
                 this.shufflePieces();
             }
             
+            // ✅ НОВАЯ ВЕРСИЯ: хаотичное расположение кусочков
             shufflePieces() {
                 this.piecesContainer.innerHTML = '';
                 const shuffled = [...this.pieces].sort(() => Math.random() - 0.5);
                 
+                const occupiedPositions = [];
+                
                 shuffled.forEach((piece) => {
                     if (!piece.placed) {
                         const pieceEl = document.createElement('div');
-                        pieceEl.className = 'puzzle-piece';
+                        pieceEl.className = 'puzzle-piece loose';
                         pieceEl.draggable = true;
                         pieceEl.dataset.pieceId = piece.id;
                         
-                        const pieceSize = 150;
-                        const bgX = -piece.col * pieceSize;
-                        const bgY = -piece.row * pieceSize;
+                        const pieceSize = 100;
+                        const bgX = -piece.col * 150;
+                        const bgY = -piece.row * 150;
                         
                         pieceEl.style.backgroundImage = `url(${this.images[this.currentImage]})`;
                         pieceEl.style.backgroundSize = `450px 450px`;
                         pieceEl.style.backgroundPosition = `${bgX}px ${bgY}px`;
+                        
+                        const pos = this.getRandomPosition(occupiedPositions, pieceSize);
+                        pieceEl.style.left = `${pos.x}px`;
+                        pieceEl.style.top = `${pos.y}px`;
+                        
+                        const rotation = Math.random() * 30 - 15;
+                        pieceEl.style.transform = `rotate(${rotation}deg)`;
                         
                         pieceEl.addEventListener('dragstart', (e) => {
                             e.dataTransfer.setData('pieceId', piece.id);
@@ -730,6 +741,31 @@
                         this.piecesContainer.appendChild(pieceEl);
                     }
                 });
+            }
+            
+            // ✅ НОВЫЙ МЕТОД: случайная позиция без наложений
+            getRandomPosition(occupied, size) {
+                const containerWidth = 500;
+                const containerHeight = 400;
+                const padding = 20;
+                
+                let attempts = 0;
+                let x, y, overlaps;
+                
+                do {
+                    x = Math.random() * (containerWidth - size - padding * 2) + padding;
+                    y = Math.random() * (containerHeight - size - padding * 2) + padding;
+                    
+                    overlaps = occupied.some(pos => 
+                        Math.abs(pos.x - x) < size + 10 && 
+                        Math.abs(pos.y - y) < size + 10
+                    );
+                    
+                    attempts++;
+                } while (overlaps && attempts < 100);
+                
+                occupied.push({x, y});
+                return {x, y};
             }
             
             handleDrop(e, targetIndex) {
