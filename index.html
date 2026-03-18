@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀  Звездные рубежи </title>
+    <title>🚀 Звездные рубежи</title>
     <style>
         * {
             margin: 0;
@@ -32,6 +32,8 @@
             background-color: white;
             border-radius: 50%;
             animation: twinkle 3s infinite;
+            pointer-events: none;
+            z-index: 0;
         }
         
         @keyframes twinkle {
@@ -46,6 +48,8 @@
             filter: blur(40px);
             opacity: 0.3;
             animation: float 20s infinite ease-in-out;
+            pointer-events: none;
+            z-index: 0;
         }
         
         @keyframes float {
@@ -209,6 +213,8 @@
             box-shadow: 
                 0 10px 30px rgba(0, 0, 0, 0.5),
                 inset 0 0 20px rgba(100, 150, 255, 0.2);
+            overflow: hidden; /* ← Защита от вылезания */
+            position: relative;
         }
         
         .board-cell {
@@ -271,6 +277,8 @@
                 inset 0 0 15px rgba(100, 150, 255, 0.1);
             min-height: 380px;
             width: 360px;
+            overflow: hidden; /* ← Защита от вылезания */
+            position: relative;
         }
         
         .puzzle-piece {
@@ -287,6 +295,8 @@
             border: 2px solid rgba(255, 255, 255, 0.8);
             position: relative;
             overflow: hidden;
+            flex-shrink: 0; /* ← Защита от сжатия */
+            box-sizing: border-box;
         }
         
         .puzzle-piece::before {
@@ -301,7 +311,8 @@
         }
         
         .puzzle-piece:hover {
-            transform: scale(1.1) rotate(2deg);
+            /* ← Уменьшенный масштаб для аккуратности */
+            transform: scale(1.05) rotate(1deg);
             box-shadow: 
                 0 8px 25px rgba(0, 0, 0, 0.5),
                 0 0 20px rgba(100, 150, 255, 0.6);
@@ -310,7 +321,7 @@
         
         .puzzle-piece:active {
             cursor: grabbing;
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
         
         .win-screen {
@@ -527,7 +538,7 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🚀  Звездные рубежи России</h1>
+        <h1>🚀 Звездные рубежи России</h1>
         <p class="subtitle">Вперед к звездам!</p>
         
         <div class="controls">
@@ -586,7 +597,7 @@
                 this.pieces = [];
                 this.board = Array(9).fill(null);
                 
-                // ВАШИ КАРТИНКИ (без лишних пробелов!)
+                // ✅ ИСПРАВЛЕНО: убраны пробелы в конце URL
                 this.images = {
                     1: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/1.jpg',
                     2: 'https://raw.githubusercontent.com/argonfobos-hub/puzzle/refs/heads/main/2.jpg',
@@ -608,14 +619,11 @@
                 this.nextBtn = document.getElementById('next-btn');
                 this.playAgainBtn = document.getElementById('play-again-btn');
                 
-                // Создаём космический фон со звёздами и туманностями
                 this.createCosmicBackground();
-                
                 this.init();
             }
             
             createCosmicBackground() {
-                // Создаём мерцающие звёзды
                 for (let i = 0; i < 50; i++) {
                     const star = document.createElement('div');
                     star.className = 'star';
@@ -628,7 +636,6 @@
                     document.body.appendChild(star);
                 }
                 
-                // Создаём туманности
                 const colors = ['#667eea', '#764ba2', '#4facfe', '#00f2fe', '#43e97b', '#f3904f'];
                 for (let i = 0; i < 6; i++) {
                     const nebula = document.createElement('div');
@@ -771,9 +778,7 @@
                 const originalPiece = this.piecesContainer.querySelector(`[data-piece-id="${pieceId}"]`);
                 if (originalPiece) originalPiece.remove();
                 
-                // Проверяем правильность позиции
                 this.checkPosition(targetIndex, pieceData);
-                
                 this.checkWin();
             }
             
@@ -787,7 +792,6 @@
                 const targetCell = this.boardElement.children[targetIndex];
                 
                 if (targetCell && this.board[targetIndex] === null) {
-                    // Перемещаем на другую ячейку доски
                     const currentCell = this.boardElement.children[currentBoardIndex];
                     const pieceElToMove = currentCell.querySelector('.puzzle-piece');
                     
@@ -802,11 +806,9 @@
                         this.board[targetIndex] = pieceData.id;
                         this.board[currentBoardIndex] = null;
                         
-                        // Проверяем правильность новой позиции
                         this.checkPosition(targetIndex, pieceData);
                     }
                 } else {
-                    // Возвращаем в контейнер
                     const currentCell = this.boardElement.children[currentBoardIndex];
                     const pieceEl = currentCell.querySelector('.puzzle-piece');
                     
@@ -828,10 +830,8 @@
                 const targetRow = Math.floor(cellIndex / 3);
                 const targetCol = cellIndex % 3;
                 
-                // Убираем все классы подсветки
                 cell.classList.remove('correct', 'wrong');
                 
-                // Проверяем правильность
                 if (targetRow === pieceData.row && targetCol === pieceData.col) {
                     cell.classList.add('correct');
                 } else {
