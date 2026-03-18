@@ -6,242 +6,420 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23000"/><circle cx="20" cy="30" r="1" fill="%23fff" opacity="0.8"/><circle cx="60" cy="20" r="0.8" fill="%23fff" opacity="0.6"/><circle cx="80" cy="70" r="1.2" fill="%23fff" opacity="0.9"/><circle cx="40" cy="80" r="0.9" fill="%23fff" opacity="0.7"/><circle cx="10" cy="60" r="1.1" fill="%23fff" opacity="0.85"/><circle cx="90" cy="40" r="0.7" fill="%23fff" opacity="0.65"/><circle cx="50" cy="50" r="0.6" fill="%23fff" opacity="0.75"/><circle cx="30" cy="10" r="1" fill="%23fff" opacity="0.8"/><circle cx="70" cy="90" r="0.9" fill="%23fff" opacity="0.7"/></svg>');
+    background-size: 50px 50px;
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 20px;
+    color: white;
+    overflow-x: hidden;
+    position: relative;
 }
 
-.container {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 900px;
-    width: 100%;
+/* Мерцающие звёзды */
+.star {
+    position: fixed;
+    background-color: white;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Туманности */
+.nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.3;
+    animation: float 20s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(20px, -20px) scale(1.1); }
+    50% { transform: translate(-20px, 20px) scale(0.9); }
+    75% { transform: translate(10px, 10px) scale(1.05); }
+}
+
+.game-container {
+    background: rgba(10, 15, 30, 0.9);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    box-shadow: 
+        0 0 30px rgba(100, 180, 255, 0.3),
+        0 0 60px rgba(150, 100, 255, 0.2),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
     padding: 30px;
-}
-
-header {
+    max-width: 1100px;
+    width: 100%;
     text-align: center;
-    margin-bottom: 30px;
+    position: relative;
+    z-index: 10;
+    backdrop-filter: blur(10px);
 }
 
 h1 {
+    color: #ffd700;
+    margin-bottom: 15px;
     font-size: 2.5rem;
-    color: #667eea;
-    margin-bottom: 10px;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.4);
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 100%;
+    animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .subtitle {
-    font-size: 1.1rem;
-    color: #666;
+    color: #aaa;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(170, 170, 170, 0.5);
 }
 
-.game-controls {
+.controls {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
     justify-content: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 10px;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
 }
 
-.difficulty-selector, .image-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-label {
-    font-weight: 600;
-    color: #333;
-}
-
-select {
-    padding: 8px 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    background: white;
+select, button {
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-size: 16px;
     cursor: pointer;
+    background: rgba(20, 30, 50, 0.8);
+    font-weight: 600;
+    color: white;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s;
 }
 
 select:focus {
     outline: none;
     border-color: #667eea;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
 }
 
-.btn {
-    padding: 12px 25px;
+button {
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-.btn-success {
-    background: #28a745;
-    color: white;
-    padding: 15px 35px;
-    font-size: 1.1rem;
-}
-
-.btn-success:hover {
-    background: #218838;
-    transform: scale(1.05);
-}
-
-.game-area {
+    transition: all 0.3s;
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 500px;
+    overflow: hidden;
 }
 
-/* === ИСПРАВЛЕННЫЙ PUZZLE-CONTAINER === */
-.puzzle-container {
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+#shuffle-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#shuffle-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 5px 15px rgba(102, 126, 234, 0.6),
+        0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+#reset-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+#reset-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 5px 15px rgba(108, 117, 125, 0.6),
+        0 0 20px rgba(108, 117, 125, 0.4);
+}
+
+/* Горизонтальное расположение: СЛЕВА доска, СПРАВА кусочки */
+.puzzle-area {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.board-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    min-width: 480px;
+}
+
+.pieces-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    min-width: 380px;
+}
+
+.puzzle-board {
     display: grid;
-    gap: 2px;
-    background: #e9ecef;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    
-    /* Ключевые правки: */
-    width: fit-content;
-    height: fit-content;
-    margin: 0 auto;
+    grid-template-columns: repeat(3, 150px);
+    grid-template-rows: repeat(3, 150px);
+    gap: 6px;
+    background: rgba(15, 20, 40, 0.6);
+    border: 3px solid rgba(100, 150, 255, 0.3);
+    border-radius: 15px;
+    padding: 12px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(100, 150, 255, 0.2);
     overflow: hidden;
     position: relative;
 }
 
-.puzzle-piece {
-    background-size: cover;
-    background-position: center;
-    cursor: grab;
-    border-radius: 5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    
-    /* Гарантируем, что кусочек не вылезет за ячейку: */
-    width: 100%;
-    height: 100%;
+.board-cell {
+    width: 150px;
+    height: 150px;
+    background-color: rgba(30, 40, 70, 0.5);
+    border: 3px dashed rgba(150, 180, 220, 0.4);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: relative;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.board-cell.occupied {
+    border: 3px solid #667eea;
+    background-color: rgba(40, 50, 90, 0.6);
+}
+
+.board-cell.correct {
+    border: 4px solid #28a745;
+    background-color: rgba(20, 60, 30, 0.7);
+    box-shadow: 
+        0 0 20px rgba(40, 167, 69, 0.6),
+        inset 0 0 10px rgba(40, 167, 69, 0.3);
+    animation: pulseGreen 2s ease-in-out infinite;
+}
+
+@keyframes pulseGreen {
+    0%, 100% { box-shadow: 0 0 10px rgba(40, 167, 69, 0.5), inset 0 0 5px rgba(40, 167, 69, 0.2); }
+    50% { box-shadow: 0 0 30px rgba(40, 167, 69, 0.8), inset 0 0 15px rgba(40, 167, 69, 0.4); }
+}
+
+.board-cell.wrong {
+    border: 4px solid #dc3545;
+    background-color: rgba(60, 20, 20, 0.7);
+    box-shadow: 
+        0 0 20px rgba(220, 53, 69, 0.6),
+        inset 0 0 10px rgba(220, 53, 69, 0.3);
+    animation: pulseRed 2s ease-in-out infinite;
+}
+
+@keyframes pulseRed {
+    0%, 100% { box-shadow: 0 0 10px rgba(220, 53, 69, 0.5), inset 0 0 5px rgba(220, 53, 69, 0.2); }
+    50% { box-shadow: 0 0 30px rgba(220, 53, 69, 0.8), inset 0 0 15px rgba(220, 53, 69, 0.4); }
+}
+
+/* === КОНТЕЙНЕР ДЛЯ КУСОЧКОВ БЕЗ ПОДЛОЖКИ === */
+.pieces-container {
+    position: relative;
+    width: 500px;
+    height: 400px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.puzzle-piece {
+    width: 100px;
+    height: 100px;
+    background-size: 450px 450px;
+    border-radius: 10px;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 
+        0 5px 15px rgba(0, 0, 0, 0.4),
+        0 0 10px rgba(100, 150, 255, 0.3);
+    transition: all 0.2s;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
     box-sizing: border-box;
 }
 
+/* Хаотичные кусочки */
+.puzzle-piece.loose {
+    position: absolute;
+    margin: 0;
+}
+
+.puzzle-piece::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    pointer-events: none;
+}
+
 .puzzle-piece:hover {
-    /* Уменьшили масштаб, чтобы не вылезал за границы */
-    transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    z-index: 10;
+    transform: scale(1.1) rotate(0deg) !important;
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(100, 150, 255, 0.6);
+    z-index: 100;
 }
 
 .puzzle-piece:active {
     cursor: grabbing;
+    transform: scale(1.05) !important;
 }
 
-.puzzle-piece.correct {
-    cursor: default;
-    opacity: 0.9;
-}
-
-.completed-message {
-    position: absolute;
+.win-screen {
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    display: flex;
+    background: rgba(5, 10, 25, 0.98);
+    display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 20px;
-    border-radius: 10px;
-    display: none;
+    gap: 35px;
+    z-index: 1000;
+    animation: fadeIn 0.6s;
 }
 
-.completed-message h2 {
-    font-size: 3rem;
-    color: #28a745;
-    animation: bounce 1s ease;
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.win-screen h2 {
+    color: #ffd700;
+    font-size: 4rem;
+    animation: bounce 1s ease, glow 2s ease-in-out infinite;
+    text-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.6),
+        0 0 60px rgba(255, 215, 0, 0.4);
 }
 
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-20px); }
 }
 
-.completed-message p {
-    font-size: 1.5rem;
-    color: #666;
+@keyframes glow {
+    0%, 100% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6); }
+    50% { text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.6); }
 }
 
-footer {
-    text-align: center;
-    margin-top: 30px;
-    color: #666;
-    font-size: 0.9rem;
+.win-screen p {
+    font-size: 1.6rem;
+    color: #ccc;
+    margin-bottom: 25px;
+    text-shadow: 0 0 10px rgba(200, 200, 200, 0.5);
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    .game-controls {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-    }
+.completed-image {
+    width: 450px;
+    height: 450px;
+    border-radius: 20px;
+    box-shadow: 
+        0 15px 50px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+    border: 6px solid rgba(255, 215, 0, 0.8);
+    object-fit: cover;
+    animation: floatWin 3s ease-in-out infinite;
 }
 
-@media (max-width: 480px) {
-    .puzzle-container {
-        max-width: 100%;
-        padding: 5px;
-        gap: 1px;
-    }
-    
-    .puzzle-piece:hover {
-        transform: none; /* Отключаем масштаб на тач-устройствах */
-    }
+@keyframes floatWin {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
 }
+
+/* КНОПКИ В ОДНУ СТРОКУ */
+.buttons-row {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+#next-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+    color: #333;
+    padding: 16px 40px;
+    font-size: 1.2rem;
+    border-radius: 15px;
+    font-weight: bold;
+    box-shadow: 
+        0 5px 20px rgba(255, 215, 0, 0.4),
+        0 0 30px rgba(255, 215, 0, 0.3);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#next-btn:hover {
+    transform: scale(1.08) rotate(2deg);
+    box-shadow: 
+        0 8px 30px rgba(255, 215, 0, 0.6),
+        0 0 40px rgba(255, 215, 0, 0.5),
+        0 0 60px rgba(255, 215, 0, 0.4);
+}
+
+#play-again-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 40px;
+    font-size: 1.2rem;
+    border-radius: 15px;
+    font-weight: bold;
+    box-shadow:
