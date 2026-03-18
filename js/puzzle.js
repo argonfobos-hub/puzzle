@@ -13,6 +13,7 @@ class PuzzleGame {
         this.totalSize = 400;
         this.imageUrl = '';
         this.order = []; // Порядок кусочков: [0, 1, 2, ..., null] где null = пустое место
+        this.gap = 2; // Должно совпадать с gap в CSS
 
         this.init();
     }
@@ -50,6 +51,13 @@ class PuzzleGame {
 
     createPuzzle() {
         this.container.innerHTML = '';
+        
+        // === ИСПРАВЛЕНИЕ: явный расчёт размеров контейнера с учётом gap ===
+        const totalGridSize = this.size * this.pieceSize + (this.size - 1) * this.gap;
+        this.container.style.width = `${totalGridSize}px`;
+        this.container.style.height = `${totalGridSize}px`;
+        // ================================================================
+        
         this.container.style.gridTemplateColumns = `repeat(${this.size}, ${this.pieceSize}px)`;
         this.container.style.gridTemplateRows = `repeat(${this.size}, ${this.pieceSize}px)`;
         
