@@ -128,6 +128,7 @@ select:focus {
     min-height: 500px;
 }
 
+/* === ИСПРАВЛЕННЫЙ PUZZLE-CONTAINER === */
 .puzzle-container {
     display: grid;
     gap: 2px;
@@ -135,6 +136,13 @@ select:focus {
     border-radius: 10px;
     padding: 10px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    
+    /* Ключевые правки: */
+    width: fit-content;
+    height: fit-content;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
 }
 
 .puzzle-piece {
@@ -144,11 +152,19 @@ select:focus {
     border-radius: 5px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    /* Гарантируем, что кусочек не вылезет за ячейку: */
+    width: 100%;
+    height: 100%;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .puzzle-piece:hover {
-    transform: scale(1.05);
+    /* Уменьшили масштаб, чтобы не вылезал за границы */
+    transform: scale(1.02);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 10;
 }
 
 .puzzle-piece:active {
@@ -221,5 +237,11 @@ footer {
 @media (max-width: 480px) {
     .puzzle-container {
         max-width: 100%;
+        padding: 5px;
+        gap: 1px;
+    }
+    
+    .puzzle-piece:hover {
+        transform: none; /* Отключаем масштаб на тач-устройствах */
     }
 }
